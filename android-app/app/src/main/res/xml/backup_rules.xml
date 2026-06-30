@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 以下版本的备份规则 -->
+<full-backup-content>
+    <!-- 包含我们的 localStorage 备份 -->
+    <include domain="file" path="content_backup.md" />
+    <include domain="sharedpref" path="makemdown_prefs.xml" />
+</full-backup-content>

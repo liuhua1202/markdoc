@@ -1,0 +1,22 @@
+# Gradle
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+
+# Generated
+captures/
+.cxx/
+
+# Keystore (NEVER commit)
+*.jks
+*.keystore
+keystore/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

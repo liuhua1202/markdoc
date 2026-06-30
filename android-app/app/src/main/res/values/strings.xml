@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">马克档</string>
+    <string name="app_name_en">Markdown</string>
+    <string name="open_md_file">用马克档打开</string>
+
+    <string name="loading">加载中...</string>
+    <string name="error_network">网络连接失败，部分功能可能不可用</string>
+    <string name="error_render">渲染失败：</string>
+
+    <!-- 抽屉菜单 -->
+    <string name="action_more">更多</string>
+    <string name="action_theme">主题</string>
+    <string name="action_view">视图</string>
+
+    <!-- A11y -->
+    <string name="cd_app_logo">应用 Logo</string>
+    <string name="cd_navigation">导航栏</string>
+</resources>

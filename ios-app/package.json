@@ -1,0 +1,29 @@
+{
+  "name": "com.makemdown.app",
+  "displayName": "马克档",
+  "version": "1.0.0",
+  "description": "马克档 - 你的随身文档浏览器 (iOS 版)",
+  "main": "www/index.html",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open": "cap open ios",
+    "build:ios": "cap sync ios && cap open ios",
+    "icons": "node scripts/generate-icons.js"
+  },
+  "keywords": ["markdown", "reader", "pwa", "ios"],
+  "author": "马克档",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/keyboard": "^6.0.2",
+    "@capacitor/share": "^6.0.2",
+    "@capacitor/status-bar": "^6.0.2",
+    "@capacitor/filesystem": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

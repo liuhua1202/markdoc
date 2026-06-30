@@ -1,0 +1,25 @@
+{
+  "appId": "com.makemdown.app",
+  "appName": "马克档",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#FDFCF7"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 800,
+      "backgroundColor": "#FDFCF7",
+      "androidSplashResourceName": "splash",
+      "iosSplashResourceName": "Splash"
+    },
+    "StatusBar": {
+      "style": "DEFAULT",
+      "backgroundColor": "#FDFCF7"
+    }
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 基础应用主题 -->
+    <style name="Theme.马克档" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 主题色 -->
+        <item name="colorPrimary">@color/brand_red</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">@color/brand_red_soft</item>
+        <item name="colorOnPrimaryContainer">@color/brand_red_dark</item>
+
+        <!-- 浅色背景 -->
+        <item name="android:colorBackground">@color/bg_light</item>
+        <item name="colorSurface">@color/bg_light_elev</item>
+        <item name="colorOnSurface">@color/fg_light</item>
+
+        <!-- 状态栏：浅色 + 深色图标 -->
+        <item name="android:statusBarColor">@color/status_bar_light</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/bg_light</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+
+        <!-- 沉浸式（适配挖孔/水滴屏） -->
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+
+        <!-- 字体 -->
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <!-- 启动页主题：使用相同的颜色但加上启动页背景 -->
+    <style name="Theme.马克档.Splash" parent="Theme.马克档">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+
+</resources>

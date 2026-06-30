@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 品牌色 -->
+    <color name="brand_red">#FF5A5F</color>
+    <color name="brand_red_dark">#E04E52</color>
+    <color name="brand_red_soft">#FFE5E6</color>
+
+    <!-- 浅色模式 -->
+    <color name="bg_light">#FDFCF7</color>
+    <color name="bg_light_elev">#FFFFFF</color>
+    <color name="bg_light_soft">#F4F2EC</color>
+    <color name="fg_light">#1A1829</color>
+    <color name="fg_light_soft">#5C5970</color>
+    <color name="border_light">#E8E5DC</color>
+
+    <!-- 深色模式 -->
+    <color name="bg_dark">#1A1829</color>
+    <color name="bg_dark_elev">#232036</color>
+    <color name="bg_dark_soft">#2A2640</color>
+    <color name="fg_dark">#FDFCF7</color>
+    <color name="fg_dark_soft">#B8B5C4</color>
+    <color name="border_dark">#312D44</color>
+
+    <!-- 启动页 -->
+    <color name="splash_bg_light">#FDFCF7</color>
+    <color name="splash_bg_dark">#1A1829</color>
+
+    <!-- 系统状态栏 -->
+    <color name="status_bar_light">#FDFCF7</color>
+    <color name="status_bar_dark">#1A1829</color>
+</resources>

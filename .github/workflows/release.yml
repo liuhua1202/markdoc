@@ -1,0 +1,481 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'        # 匹配 v1.0.0, v1.0.6, v2.0.0-beta 等
+  workflow_dispatch:  # 也支持手动触发
+
+permissions:
+  contents: write    # 用于创建 GitHub Release
+
+jobs:
+  # ===========================================================================
+  # 阶段 1: 同步 Web 资源到各平台 + 构建准备
+  # ===========================================================================
+  prepare:
+    name: 准备构建环境
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 同步 Web 资源到所有平台
+        shell: pwsh
+        run: |
+          # Android assets
+          New-Item -ItemType Directory -Force -Path "android-app/app/src/main/assets" | Out-Null
+          Copy-Item "src/index.html" "android-app/app/src/main/assets/index.html" -Force
+          # Desktop src
+          Copy-Item "src/index.html" "desktop-app/src/index.html" -Force
+          # iOS www
+          New-Item -ItemType Directory -Force -Path "ios-app/www" | Out-Null
+          Copy-Item "src/index.html" "ios-app/www/index.html" -Force
+          # public
+          New-Item -ItemType Directory -Force -Path "public" | Out-Null
+          Copy-Item "src/index.html" "public/index.html" -Force
+          Write-Host "✓ 同步完成" -ForegroundColor Green
+
+      - name: 上传构建产物（给后续 jobs 用）
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepared-source
+          path: |
+            desktop-app/src/
+            android-app/
+            ios-app/
+            public/
+          retention-days: 1
+
+  # ===========================================================================
+  # 阶段 2a: macOS 构建 + 签名 + 公证
+  # ===========================================================================
+  build-macos:
+    name: macOS Build (签名 + 公证)
+    needs: prepare
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载准备好的源码
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-source
+          path: _source
+
+      - name: 准备 desktop-app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
+          Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
+          Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
+          Copy-Item -Recurse -Force "build" "desktop-app/build"
+          # 写 entitlements（macOS 签名必需）
+          if (-not (Test-Path "desktop-app/build")) { New-Item -ItemType Directory -Force -Path "desktop-app/build" | Out-Null }
+          @'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>com.apple.security.cs.allow-jit</key><true/>
+            <key>com.apple.security.cs.allow-unsigned-executable-memory</key><true/>
+            <key>com.apple.security.cs.allow-dyld-environment-variables</key><true/>
+            <key>com.apple.security.cs.disable-library-validation</key><true/>
+            <key>com.apple.security.files.user-selected.read-write</key><true/>
+            <key>com.apple.security.network.client</key><true/>
+          </dict>
+          </plist>
+          '@ | Out-File "desktop-app/build/entitlements.mac.plist" -Encoding UTF8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: desktop-app/package-lock.json
+
+      - name: 安装依赖
+        working-directory: desktop-app
+        run: npm ci
+
+      - name: 导入 Developer ID 证书到 Keychain
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PWD: ${{ secrets.MACOS_CERT_PWD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # 创建临时 keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/mac-build.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # 导入 .p12 证书（base64 编码）
+          CERT_PATH=$RUNNER_TEMP/cert.p12
+          echo "$MACOS_CERT_P12" | base64 --decode > $CERT_PATH
+          security import $CERT_PATH -k $KEYCHAIN_PATH -P "$MACOS_CERT_PWD" -A -T /usr/bin/codesign
+
+          # 设置 keychain 搜索列表（让 codesign 能找到证书）
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+
+          # 验证
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+
+      - name: 构建 macOS (.dmg + .zip, x64 + arm64)
+        working-directory: desktop-app
+        env:
+          CSC_LINK: ${{ secrets.MACOS_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MACOS_CERT_PWD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PWD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx electron-builder --mac --x64 --arm64 --publish never
+
+      - name: 列出构建产物
+        working-directory: desktop-app/dist
+        run: |
+          echo "=== macOS 构建产物 ==="
+          ls -lh *.dmg *.zip 2>/dev/null || ls -lh
+
+      - name: 上传 macOS 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-build
+          path: desktop-app/dist/*.dmg
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: 清理临时 keychain
+        if: always()
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/mac-build.keychain-db
+          security delete-keychain $KEYCHAIN_PATH || true
+
+  # ===========================================================================
+  # 阶段 2b: Windows 构建
+  # ===========================================================================
+  build-windows:
+    name: Windows Build
+    needs: prepare
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载准备好的源码
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-source
+          path: _source
+
+      - name: 准备 desktop-app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
+          Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
+          Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
+          Copy-Item -Recurse -Force "build" "desktop-app/build"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: desktop-app/package-lock.json
+
+      - name: 安装依赖
+        working-directory: desktop-app
+        run: npm ci
+
+      - name: 构建 Windows (.exe NSIS + Portable)
+        working-directory: desktop-app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: 上传 Windows 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: desktop-app/dist/*.exe
+          retention-days: 14
+
+  # ===========================================================================
+  # 阶段 2c: Linux 构建
+  # ===========================================================================
+  build-linux:
+    name: Linux Build
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载准备好的源码
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-source
+          path: _source
+
+      - name: 准备 desktop-app
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
+          Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
+          Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
+          Copy-Item -Recurse -Force "build" "desktop-app/build"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: desktop-app/package-lock.json
+
+      - name: 安装依赖
+        working-directory: desktop-app
+        run: npm ci
+
+      - name: 构建 Linux (.AppImage + .deb)
+        working-directory: desktop-app
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --linux --x64 --publish never
+
+      - name: 上传 Linux 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: desktop-app/dist/*.AppImage
+          retention-days: 14
+
+  # ===========================================================================
+  # 阶段 2d: Android 构建
+  # ===========================================================================
+  build-android:
+    name: Android Build (Debug + Release)
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载准备好的源码
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-source
+          path: _source
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 写入 local.properties（SDK 路径）
+        run: |
+          mkdir -p android-app
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > android-app/local.properties
+
+      - name: 准备 android-app
+        run: |
+          cp -r _source/android-app/. android-app/
+
+      - name: 创建 debug keystore
+        run: |
+          keytool -genkey -v \
+            -keystore android-app/debug.keystore \
+            -storepass android -alias androiddebugkey -keypass android \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: 上传 Debug keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-keystore
+          path: android-app/debug.keystore
+          retention-days: 365
+
+      - name: 构建 Debug APK
+        working-directory: android-app
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: 构建 Release APK (用 debug keystore 签名)
+        working-directory: android-app
+        env:
+          KEYSTORE_PATH: debug.keystore
+          KEYSTORE_PASS: android
+          KEY_ALIAS: androiddebugkey
+          KEY_PASS: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: 上传 Android 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: |
+            android-app/app/build/outputs/apk/debug/*.apk
+            android-app/app/build/outputs/apk/release/*.apk
+          retention-days: 14
+
+  # ===========================================================================
+  # 阶段 2e: Web PWA 打包
+  # ===========================================================================
+  build-web:
+    name: Web PWA 构建
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载准备好的源码
+        uses: actions/download-artifact@v4
+        with:
+          name: prepared-source
+          path: _source
+
+      - name: 打包 Web PWA
+        run: |
+          cp -r _source/public/. public/
+          # 打包成 zip 方便下载
+          cd public
+          zip -r ../makemdown-pwa.zip . -x "*.DS_Store"
+          cd ..
+
+      - name: 上传 Web PWA 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-pwa
+          path: makemdown-pwa.zip
+          retention-days: 14
+
+  # ===========================================================================
+  # 阶段 3: 创建 GitHub Release
+  # ===========================================================================
+  release:
+    name: 创建 GitHub Release
+    needs: [build-macos, build-windows, build-linux, build-android, build-web]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载所有产物
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-build'
+          path: artifacts
+          merge-multiple: true
+
+      - name: 列出下载的产物
+        run: |
+          echo "=== 准备发布的文件 ==="
+          find artifacts -type f -exec ls -lh {} \;
+
+      - name: 生成 Release Notes
+        id: notes
+        run: |
+          # 从最近 50 个 commit 生成 changelog
+          TAG=${GITHUB_REF#refs/tags/}
+          NOTES=$(git log --pretty=format:"- %s (%h)" $TAG~50..$TAG 2>/dev/null | head -50 || echo "无可用 commit 历史")
+          {
+            echo "## 马克档 $TAG"
+            echo ""
+            echo "### 下载"
+            echo ""
+            echo "| 平台 | 文件 |"
+            echo "| --- | --- |"
+            echo "| **macOS** (Apple Silicon / Intel) | \`*.dmg\` |"
+            echo "| **Windows** | \`*-Setup-*.exe\` (NSIS 安装版) 或 \`*-portable.exe\` (免安装) |"
+            echo "| **Linux** | \`*.AppImage\` 或 \`*.deb\` |"
+            echo "| **Android** | \`*-debug.apk\` 或 \`*-release.apk\` |"
+            echo "| **Web / PWA** | \`makemdown-pwa.zip\` |"
+            echo ""
+            echo "### 更新内容"
+            echo ""
+            echo "$NOTES"
+            echo ""
+            echo "### 安装说明"
+            echo ""
+            echo "- **macOS**: 双击 .dmg，拖到 Applications。如提示\u201c未识别开发者\u201d，开 \u201c系统设置 → 隐私与安全性 → 仍要打开\u201d"
+            echo "- **Windows**: 运行 -Setup-.exe 安装，或 -portable.exe 免安装"
+            echo "- **Android**: 允许 \u201c未知来源\u201d 安装后打开 .apk"
+            echo "- **Web**: 解压到任何静态托管(Vercel/Netlify/Pages)，或本地 \`python -m http.server\`"
+          } > release_notes.md
+          cat release_notes.md
+
+      - name: 创建 Release 并上传所有产物
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+          files: |
+            artifacts/**/*.dmg
+            artifacts/**/*.zip
+            artifacts/**/*.exe
+            artifacts/**/*.AppImage
+            artifacts/**/*.deb
+            artifacts/**/*.apk
+          fail_on_unmatched_files: false
+
+  # ===========================================================================
+  # 阶段 4: 同步到 PWA 部署（可选：自动发布到 GitHub Pages）
+  # ===========================================================================
+  deploy-pages:
+    name: 部署 Web 到 GitHub Pages
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 下载 Web 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: web-pwa
+          path: public
+
+      - name: 解压并准备部署
+        run: |
+          rm -rf public-deploy
+          mkdir public-deploy
+          unzip -q public/makemdown-pwa.zip -d public-deploy/
+          ls -la public-deploy/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public-deploy
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

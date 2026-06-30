@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 夜间模式主题（覆盖） -->
+    <style name="Theme.马克档" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_red</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#3A1F22</item>
+        <item name="colorOnPrimaryContainer">@color/brand_red_soft</item>
+
+        <item name="android:colorBackground">@color/bg_dark</item>
+        <item name="colorSurface">@color/bg_dark_elev</item>
+        <item name="colorOnSurface">@color/fg_dark</item>
+
+        <!-- 状态栏：深色 + 浅色图标 -->
+        <item name="android:statusBarColor">@color/status_bar_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="Theme.马克档.Splash" parent="Theme.马克档">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+
+</resources>

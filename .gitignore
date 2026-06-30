@@ -1,0 +1,97 @@
+# Build artifacts
+desktop-app/dist/
+desktop-app/build/
+desktop-app/out/
+desktop-app/node_modules/
+desktop-app/.cache/
+
+# Android
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/local.properties
+android-app/debug.keystore
+android-app/app/release/
+android-app/app/src/main/assets/*
+!android-app/app/src/main/assets/.gitkeep
+
+# iOS
+ios-app/Pods/
+ios-app/build/
+ios-app/DerivedData/
+ios-app/www/**
+!ios-app/www/.gitkeep
+
+# Web deploy
+public/
+public-staging/
+
+# macOS
+*.dmg
+*.app/
+*.pkg
+马克档.app/
+macos-dist/
+*MacDown*.app/
+
+# Windows
+*.exe
+*.msi
+
+# Linux
+*.AppImage
+*.deb
+*.rpm
+
+# Generic
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*.tmp
+.cache/
+.tmp/
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+desktop.ini
+
+# Test/coverage
+coverage/
+.nyc_output/
+junit.xml
+
+# PWA zip
+makemdown-*.zip
+makemdown-*.apk
+makemdown-*.dmg
+makemdown-*.exe
+makemdown-*.AppImage
+makemdown-pwa/
+markdoc-*.zip
+markdoc-*.apk
+markdoc-*.dmg
+markdoc-*.exe
+markdoc-*.AppImage
+*.zip
+!docs/**/*.zip
+
+# Secrets (NEVER commit)
+*.p12
+*.p8
+*.p12.b64
+.secrets
+secrets/
+
+# Temp
+tmp/
+temp/

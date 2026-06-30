@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 圆角方形背景 -->
+  <rect width="1024" height="1024" rx="225" fill="#1A1829" />
+  
+  <!-- 白色文档卡片 -->
+  <rect x="212" y="262" width="600" height="500" rx="48" fill="#FDFCF7" opacity="0.96" />
+  
+  <!-- 右上角折页（简洁折痕） -->
+  <path d="M712 262 L812 362 L812 762 L212 762 L212 262 Z" fill="#F0EEF5" opacity="0.5" />
+  <path d="M712 262 L712 362 L812 362 Z" fill="#E2DEDE" />
+  
+  <!-- 核心字母 "M"（粗体圆角，完全居中） -->
+  <path d="M330 620 L410 410 L512 510 L614 410 L694 620" 
+        stroke="#FF5A5F" stroke-width="64" 
+        stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- 极简点缀：左下角两个 # 号（Markdown 符号，超淡处理） -->
+  <text x="262" y="710" font-family="Arial, sans-serif" font-weight="bold" font-size="36" fill="#D0CDD6" opacity="0.6">#</text>
+  <text x="312" y="710" font-family="Arial, sans-serif" font-weight="bold" font-size="36" fill="#D0CDD6" opacity="0.6">#</text>
+</svg>

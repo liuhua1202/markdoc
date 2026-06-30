@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 启动页背景：纯色 + 居中 Logo -->
+<!-- 简化版本：不使用 <bitmap> 包装，避免与 adaptive icon 冲突 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 背景色（随主题切换） -->
+    <item android:drawable="@color/splash_bg_light" />
+</layer-list>

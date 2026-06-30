@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 默认 HTTPS 优先 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- 允许 marked.js CDN (HTTPS 已经是默认，这里仅做记录) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">cdn.jsdelivr.net</domain>
+        <domain includeSubdomains="true">unpkg.com</domain>
+    </domain-config>
+</network-security-config>
