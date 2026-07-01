@@ -71,12 +71,12 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "========================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "🚀 启动 App:" -ForegroundColor Cyan
-    adb shell am start -n com.makemdown.app.debug/com.makemdown.app.MainActivity
+    adb shell am start -n com.markdoc.app.debug/com.markdoc.app.MainActivity
     Write-Host ""
     Write-Host "💡 调试提示:" -ForegroundColor Cyan
     Write-Host "   - 实时日志: adb logcat -s MainActivity WebAppInterface chromium" -ForegroundColor Yellow
     Write-Host "   - Chrome DevTools: chrome://inspect/#devices" -ForegroundColor Yellow
-    Write-Host "   - 卸载: adb uninstall com.makemdown.app.debug" -ForegroundColor Yellow
+    Write-Host "   - 卸载: adb uninstall com.markdoc.app.debug" -ForegroundColor Yellow
 } else {
     Write-Host "❌ 安装失败，请检查上方错误" -ForegroundColor Red
 }

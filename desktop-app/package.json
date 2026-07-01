@@ -20,7 +20,7 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.makemdown.app",
+    "appId": "com.markdoc.app",
     "productName": "马克档",
     "copyright": "Copyright © 2026 马克档",
     "directories": {

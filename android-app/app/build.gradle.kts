@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.makemdown.app"
+    namespace = "com.markdoc.app"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.makemdown.app"
+        applicationId = "com.markdoc.app"
         minSdk = 24              // Android 7.0，兼容绝大多数设备
         targetSdk = 34
         versionCode = 1

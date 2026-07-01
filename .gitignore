@@ -71,17 +71,12 @@ coverage/
 junit.xml
 
 # PWA zip
-makemdown-*.zip
-makemdown-*.apk
-makemdown-*.dmg
-makemdown-*.exe
-makemdown-*.AppImage
-makemdown-pwa/
 markdoc-*.zip
 markdoc-*.apk
 markdoc-*.dmg
 markdoc-*.exe
 markdoc-*.AppImage
+markdoc-pwa/
 *.zip
 !docs/**/*.zip
 

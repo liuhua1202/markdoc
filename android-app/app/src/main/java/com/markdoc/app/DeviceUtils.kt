@@ -1,4 +1,4 @@
-package com.makemdown.app
+package com.markdoc.app
 
 import android.content.Context
 import android.content.pm.PackageManager

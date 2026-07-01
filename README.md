@@ -98,7 +98,7 @@ open MarkdownPad.xcworkspace
 | Windows | `马克档-*-x64.exe` |
 | Linux | `马克档-*.AppImage` |
 | Android | `*.apk` |
-| Web | `makemdown-pwa.zip` |
+| Web | `markdoc-pwa.zip` |
 
 ---
 

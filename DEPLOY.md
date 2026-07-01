@@ -64,7 +64,7 @@ netlify deploy --prod --dir=public
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name makemdown.example.com;
+    server_name markdoc.example.com;
 
     root /var/www/markdown/public;
     index index.html;

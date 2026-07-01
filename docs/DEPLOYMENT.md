@@ -35,10 +35,10 @@ Web 版需要的文件(根目录下的):
 ```bash
 # Windows PowerShell
 Compress-Archive -Path index.html, manifest.json, sw.js, logo.svg, icons, vendor `
-  -DestinationPath makemdown-pwa.zip
+  -DestinationPath markdoc-pwa.zip
 
 # macOS / Linux
-zip -r makemdown-pwa.zip index.html manifest.json sw.js logo.svg icons vendor
+zip -r markdoc-pwa.zip index.html manifest.json sw.js logo.svg icons vendor
 ```
 
 ---

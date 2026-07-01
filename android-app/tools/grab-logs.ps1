@@ -23,14 +23,14 @@ if ($devices -notmatch "device$") {
 $ts = Get-Date -Format "yyyyMMdd_HHmmss"
 $outDir = Join-Path $PSScriptRoot "..\logs"
 if (-not (Test-Path $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
-$outFile = Join-Path $outDir "makemdown-logs-$ts.txt"
+$outFile = Join-Path $outDir "markdoc-logs-$ts.txt"
 
 Write-Host "🔍 清空 logcat 缓存..." -ForegroundColor Cyan
 adb logcat -c
 Write-Host "🚀 启动马克档..." -ForegroundColor Cyan
-adb shell am start -n com.makemdown.app.debug/com.makemdown.app.MainActivity 2>$null
-adb shell am start -n com.makemdown.app/com.makemdown.app.MainActivity 2>$null
+adb shell am start -n com.markdoc.app.debug/com.markdoc.app.MainActivity 2>$null
 
+adb shell am start -n com.markdoc.app/com.markdoc.app.MainActivity 2>$null
 Write-Host ""
 Write-Host "📝 开始抓取日志（30 秒）..." -ForegroundColor Cyan
 Write-Host "   现在请在手机上重现闪退 / 操作 App" -ForegroundColor Yellow
@@ -49,7 +49,7 @@ Write-Host ""
 Write-Host "📂 拉取 App 内部崩溃日志..." -ForegroundColor Cyan
 $crashDir = Join-Path $outDir "crash_$ts"
 New-Item -ItemType Directory -Path $crashDir -Force | Out-Null
-foreach ($pkg in @("com.makemdown.app", "com.makemdown.app.debug")) {
+foreach ($pkg in @("com.markdoc.app", "com.markdoc.app.debug")) {
     adb shell "run-as $pkg ls files/logs 2>/dev/null" | ForEach-Object {
         $fname = $_.Trim()
         if ($fname -and $fname -ne "ls:" -and $fname -notmatch "not found") {

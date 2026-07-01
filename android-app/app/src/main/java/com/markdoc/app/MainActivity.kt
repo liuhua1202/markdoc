@@ -1,4 +1,4 @@
-package com.makemdown.app
+package com.markdoc.app
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -24,7 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.makemdown.app.databinding.ActivityMainBinding
+import com.markdoc.app.databinding.ActivityMainBinding
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -292,7 +292,7 @@ class MainActivity : AppCompatActivity() {
             val js = """
                 (function() {
                     try {
-                        var content = localStorage.getItem('makemdown.content.v1');
+                        var content = localStorage.getItem('markdoc.content.v1');
                         if (!content || content.length < 10) {
                             if (window.importMarkdown) {
                                 window.importMarkdown(${jsString(backupContent)});
@@ -375,7 +375,7 @@ class MainActivity : AppCompatActivity() {
         if (!DeviceUtils.isXiaomi) return
 
         val prefs = try {
-            getSharedPreferences("makemdown_prefs", MODE_PRIVATE)
+            getSharedPreferences("markdoc_prefs", MODE_PRIVATE)
         } catch (e: Throwable) {
             Log.w(TAG, "SharedPreferences 不可用", e)
             return
@@ -531,7 +531,7 @@ class MainActivity : AppCompatActivity() {
         try {
             webView.onPause()
             // 兜底备份
-            webView.evaluateJavascript("localStorage.getItem('makemdown.content.v1')") { value ->
+            webView.evaluateJavascript("localStorage.getItem('markdoc.content.v1')") { value ->
                 try {
                     if (value != null && value != "null") {
                         val content = value.removePrefix("\"").removeSuffix("\"")

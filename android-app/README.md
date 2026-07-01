@@ -20,7 +20,7 @@ android-app/
 │       ├── assets/
 │       │   ├── index.html         # 主应用 HTML（与 Web 版同源）
 │       │   └── logo.svg           # 品牌 Logo
-│       ├── java/com/makemdown/app/
+│       ├── java/com/markdoc/app/
 │       │   ├── MarkdownApplication.kt   # Application（动态色、调试）
 │       │   ├── MainActivity.kt          # 主 Activity（WebView + 桥接）
 │       │   └── WebAppInterface.kt       # JS 桥接层
@@ -169,7 +169,7 @@ Android: 14 (API 34)
 ROM: HyperOS 1.0.5
 MIUI PowerSave: false
 WebView Package: com.google.android.webview
-Package: com.makemdown.app
+Package: com.markdoc.app
 ```
 
 ---
@@ -225,7 +225,7 @@ adb logcat -s MainActivity WebAppInterface chromium:V
 ### 卸载
 
 ```powershell
-adb uninstall com.makemdown.app.debug
+adb uninstall com.markdoc.app.debug
 ```
 
 ---
@@ -283,7 +283,7 @@ Copy-Item ..\index.html app\src\main\assets\index.html -Force
 adb logcat -s "chromium" "WebAppInterface" "MainActivity"
 
 # 全部日志
-adb logcat | findstr "makemdown"
+adb logcat | findstr "markdoc"
 ```
 
 ---

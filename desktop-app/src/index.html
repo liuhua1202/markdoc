@@ -2247,14 +2247,14 @@
     // 1. 配置 & 存储键
     // ----------------------------------------------------------
     const STORAGE_KEYS = {
-      content: 'makemdown.content.v1',         // 旧版单文档（迁移用）
-      docs: 'makemdown.docs.v1',                // 多文档列表
-      activeDoc: 'makemdown.activeDocId.v1',    // 当前激活文档 ID
-      theme: 'makemdown.theme.v1',
-      viewMode: 'makemdown.viewMode.v1',
-      splitRatio: 'makemdown.splitRatio.v1',
-      syncConfig: 'makemdown.syncConfig.v1',    // 云同步配置
-      lastSync: 'makemdown.lastSync.v1',        // 最后同步时间
+      content: 'markdoc.content.v1',         // 旧版单文档（迁移用）
+      docs: 'markdoc.docs.v1',                // 多文档列表
+      activeDoc: 'markdoc.activeDocId.v1',    // 当前激活文档 ID
+      theme: 'markdoc.theme.v1',
+      viewMode: 'markdoc.viewMode.v1',
+      splitRatio: 'markdoc.splitRatio.v1',
+      syncConfig: 'markdoc.syncConfig.v1',    // 云同步配置
+      lastSync: 'markdoc.lastSync.v1',        // 最后同步时间
     };
 
     // ----------------------------------------------------------
@@ -2754,11 +2754,16 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
       init() {
         // 加载保存的偏好
-        const raw = localStorage.getItem('makemdown.reader.v1');
+        const raw = localStorage.getItem('markdoc.reader.v1');
         if (raw) {
           try { this.settings = JSON.parse(raw); } catch (_) {}
         }
         if (!this.settings) this.settings = { ...this.defaults };
+
+        // 绑定事件处理函数（保留 this 上下文）
+        // 必须在 init() 里绑定一次，否则 addEventListener 拿到的引用无法 remove
+        if (!this._onScrollBound) this._onScrollBound = this._onScroll.bind(this);
+        if (!this._onTapBound) this._onTapBound = this._onTap.bind(this);
 
         // 全局快捷键
         document.addEventListener('keydown', (e) => {
@@ -2802,59 +2807,89 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
       open() {
         if (this.isOpen) return;
-        this.isOpen = true;
 
-        // 保存当前编辑器内容
-        if (typeof ContentManager !== 'undefined') {
-          ContentManager.save();
-        }
+        // 兜底：若 init() 尚未执行（boot 阶段就被调用），保证 settings 有默认值
+        if (!this.settings) this.settings = { ...this.defaults };
 
-        // 构建 UI
+        // 确保事件处理函数已绑定
+        if (!this._onScrollBound) this._onScrollBound = this._onScroll.bind(this);
+        if (!this._onTapBound) this._onTapBound = this._onTap.bind(this);
+
+        // 构建 UI（_build 之前一切准备，失败时无副作用）
         this._build();
 
         // 渲染内容
-        this._render();
+        try {
+          this._render();
+          this._applySettings();
+        } catch (e) {
+          console.error('[Reader] 渲染失败:', e);
+          // 清理已建的 DOM，保持 isOpen=false（下次点击能正常打开）
+          if (this.el) {
+            this.el.remove();
+            this.el = null;
+          }
+          // 兜底：恢复主 UI（_restoreUI 可能尚未设置）
+          if (this._restoreUI) try { this._restoreUI(); } catch (_) {}
+          throw e;
+        }
 
-        // 应用设置
-        this._applySettings();
+        // 保存当前编辑器内容（放在构建之后，失败不影响 UI）
+        try {
+          if (typeof ContentManager !== 'undefined' && ContentManager.editor) {
+            ContentManager.save();
+          }
+        } catch (e) {
+          console.warn('[Reader] ContentManager.save 失败（不影响显示）:', e);
+        }
 
-        // 显示
+        // 显示（所有初始化完成后才置 isOpen=true）
         requestAnimationFrame(() => {
-          this.el.classList.add('show');
+          if (this.el) this.el.classList.add('show');
         });
 
         // 自动隐藏工具栏
         this._scheduleHideControls();
 
         // 监听滚动更新进度
-        window.addEventListener('scroll', this._onScroll, { passive: true });
+        window.addEventListener('scroll', this._onScrollBound, { passive: true });
 
         // 监听触摸
-        this.el.addEventListener('click', this._onTap);
+        this.el.addEventListener('click', this._onTapBound);
+
+        // 一切就绪，置位
+        this.isOpen = true;
       },
 
       close() {
         if (!this.isOpen) return;
         this.isOpen = false;
 
-        this.el.classList.add('hide');
-        setTimeout(() => {
-          if (this.el) {
-            this.el.remove();
-            this.el = null;
-          }
-        }, 300);
+        if (this.el) {
+          this.el.classList.add('hide');
+          const elToRemove = this.el;
+          setTimeout(() => {
+            try { elToRemove.remove(); } catch (_) {}
+          }, 300);
+          this.el = null;
+        }
 
-        window.removeEventListener('scroll', this._onScroll);
-        if (this.el) this.el.removeEventListener('click', this._onTap);
+        if (this._onScrollBound) {
+          window.removeEventListener('scroll', this._onScrollBound);
+        }
+        if (this._onTapBound && this._lastElForTap) {
+          try { this._lastElForTap.removeEventListener('click', this._onTapBound); } catch (_) {}
+        }
 
         // 恢复主 UI
         document.body.style.overflow = '';
-        if (this._restoreUI) this._restoreUI();
+        if (this._restoreUI) {
+          try { this._restoreUI(); } catch (_) {}
+        }
 
         // 恢复 ViewManager
         if (typeof ViewManager !== 'undefined' && ViewManager.current === 'reader') {
-          ViewManager.set('split', false);
+          try { ViewManager.set('split', false); } catch (_) {}
         }
       },
 
@@ -2869,6 +2904,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
         this.el = document.createElement('div');
         this.el.id = 'reader';
+        this._lastElForTap = this.el;
         this.el.innerHTML = `
           <div class="reader-progress"><div class="reader-progress-bar" id="reader-progress-bar"></div></div>
 
@@ -3009,7 +3045,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       setSetting(type, value) {
         const key = type === 'lineHeight' ? 'lineHeight' : type;
         this.settings[key] = value;
-        localStorage.setItem('makemdown.reader.v1', JSON.stringify(this.settings));
+        localStorage.setItem('markdoc.reader.v1', JSON.stringify(this.settings));
         this._applySettings();
       },
 
@@ -3927,7 +3963,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `makemdown-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `markdoc-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
         showToast('已导出 ' + this.docs.length + ' 个文档');
@@ -4854,7 +4890,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           return;
         }
         try {
-          this.channel = new BroadcastChannel('makemdown-sync');
+          this.channel = new BroadcastChannel('markdoc-sync');
           this.channel.addEventListener('message', (e) => this._onMessage(e.data));
           console.log('[MultiTab] 多标签同步已启用');
         } catch (e) {
@@ -5150,7 +5186,7 @@ MIT
       loading: false,
 
       init() {
-        const raw = localStorage.getItem('makemdown.aiConfig.v1');
+        const raw = localStorage.getItem('markdoc.aiConfig.v1');
         if (raw) {
           try { this.config = JSON.parse(raw); } catch (_) {}
         }
@@ -5162,12 +5198,12 @@ MIT
 
       saveConfig(cfg) {
         this.config = cfg;
-        localStorage.setItem('makemdown.aiConfig.v1', JSON.stringify(cfg));
+        localStorage.setItem('markdoc.aiConfig.v1', JSON.stringify(cfg));
       },
 
       clearConfig() {
         this.config = null;
-        localStorage.removeItem('makemdown.aiConfig.v1');
+        localStorage.removeItem('markdoc.aiConfig.v1');
         this.history = [];
       },
 
@@ -5770,7 +5806,7 @@ MIT
           const a = document.createElement('a');
           a.href = url;
           const ts = new Date().toISOString().slice(0, 10);
-          a.download = `makemdown-${ts}.md`;
+          a.download = `markdoc-${ts}.md`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -5907,12 +5943,19 @@ MIT
       try {
         safe('marked 配置', () => configureMarked());
         safe('主题', () => ThemeManager.init());
-        safe('视图模式', () => ViewManager.init());
+        // 关键 boot 顺序：
+        // 1) 内容管理（ContentManager.editor 必须先初始化，因为 DocManager 和 Reader.open 都依赖它）
+        // 2) 文档管理（DocManager._syncToEditor 会调用 ContentManager.render）
+        // 3) 视图模式（如果 localStorage 存了 viewMode='reader'，会触发 Reader.open → ContentManager.save）
+        //
+        // 历史上 bug 是 视图模式 跑在 内容管理 之前，
+        // 导致 boot 阶段 Reader.open → ContentManager.save() 抛错 → Reader.isOpen 卡在 true → 用户首次点阅读按钮直接早返回。
         safe('内容管理', () => ContentManager.init());
         safe('文档管理', () => {
           if (typeof DocManager !== 'undefined') DocManager.init();
           if (typeof DocsUI !== 'undefined') DocsUI.init();
         });
+        safe('视图模式', () => ViewManager.init());
         safe('分割条', () => Divider.init());
         safe('抽屉菜单', () => Drawer.init());
         safe('云同步', () => { if (window.SyncManager) SyncManager.init(); });
@@ -6133,7 +6176,7 @@ MIT
       const nativeDownload = function(filename, content) {
         try {
           const ts = new Date().toISOString().slice(0, 10);
-          const finalName = (filename || `makemdown-${ts}`).replace(/\.md$/i, '') + '.md';
+          const finalName = (filename || `markdoc-${ts}`).replace(/\.md$/i, '') + '.md';
           window.Android.saveToDownloads(content, finalName);
           window.Android.haptic(20);
         } catch (e) {
@@ -6153,7 +6196,7 @@ MIT
       const origDownloadBtn = document.getElementById('act-download');
       if (origDownloadBtn) {
         origDownloadBtn.onclick = function() {
-          nativeDownload('makemdown-' + new Date().toISOString().slice(0, 10), document.getElementById('editor').value);
+          nativeDownload('markdoc-' + new Date().toISOString().slice(0, 10), document.getElementById('editor').value);
           // 关闭抽屉
           document.getElementById('drawer').classList.remove('show');
           document.getElementById('drawer-mask').classList.remove('show');

@@ -353,14 +353,14 @@ jobs:
           cp -r _source/public/. public/
           # 打包成 zip 方便下载
           cd public
-          zip -r ../makemdown-pwa.zip . -x "*.DS_Store"
+          zip -r ../markdoc-pwa.zip . -x "*.DS_Store"
           cd ..
 
       - name: 上传 Web PWA 产物
         uses: actions/upload-artifact@v4
         with:
           name: web-pwa
-          path: makemdown-pwa.zip
+          path: markdoc-pwa.zip
           retention-days: 14
 
   # ===========================================================================
@@ -404,7 +404,7 @@ jobs:
             echo "| **Windows** | \`*-Setup-*.exe\` (NSIS 安装版) 或 \`*-portable.exe\` (免安装) |"
             echo "| **Linux** | \`*.AppImage\` 或 \`*.deb\` |"
             echo "| **Android** | \`*-debug.apk\` 或 \`*-release.apk\` |"
-            echo "| **Web / PWA** | \`makemdown-pwa.zip\` |"
+            echo "| **Web / PWA** | \`markdoc-pwa.zip\` |"
             echo ""
             echo "### 更新内容"
             echo ""
@@ -465,7 +465,7 @@ jobs:
         run: |
           rm -rf public-deploy
           mkdir public-deploy
-          unzip -q public/makemdown-pwa.zip -d public-deploy/
+          unzip -q public/markdoc-pwa.zip -d public-deploy/
           ls -la public-deploy/
 
       - name: Setup Pages

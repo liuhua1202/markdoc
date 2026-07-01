@@ -133,7 +133,7 @@ git push origin :refs/tags/v1.0.6
 | Linux | `马克档-1.0.7-amd64.deb` | ~80 MB | Debian/Ubuntu 系统包 |
 | Android Debug | `app-debug.apk` | ~7 MB | 可装可调试,带 dev tools |
 | Android Release | `app-release-unsigned.apk` | ~3 MB | 未签名(需用户自行签名) |
-| Web | `makemdown-pwa.zip` | ~150 KB | 解压部署到任何静态服务器 |
+| Web | `markdoc-pwa.zip` | ~150 KB | 解压部署到任何静态服务器 |
 
 ---
 

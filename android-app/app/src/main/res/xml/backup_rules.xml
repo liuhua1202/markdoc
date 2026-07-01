@@ -3,5 +3,5 @@
 <full-backup-content>
     <!-- 包含我们的 localStorage 备份 -->
     <include domain="file" path="content_backup.md" />
-    <include domain="sharedpref" path="makemdown_prefs.xml" />
+    <include domain="sharedpref" path="markdoc_prefs.xml" />
 </full-backup-content>

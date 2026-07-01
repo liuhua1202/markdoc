@@ -3,10 +3,10 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="file" path="content_backup.md" />
-        <include domain="sharedpref" path="makemdown_prefs.xml" />
+        <include domain="sharedpref" path="markdoc_prefs.xml" />
     </cloud-backup>
     <device-transfer>
         <include domain="file" path="content_backup.md" />
-        <include domain="sharedpref" path="makemdown_prefs.xml" />
+        <include domain="sharedpref" path="markdoc_prefs.xml" />
     </device-transfer>
 </data-extraction-rules>

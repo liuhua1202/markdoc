@@ -1,4 +1,4 @@
-package com.makemdown.app
+package com.markdoc.app
 
 import android.app.Application
 import android.webkit.WebView

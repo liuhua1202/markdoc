@@ -1,4 +1,4 @@
-package com.makemdown.app
+package com.markdoc.app
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -211,7 +211,7 @@ class WebAppInterface(
      */
     @JavascriptInterface
     fun getDeviceInfo(): String {
-        return com.makemdown.app.DeviceUtils.deviceInfo(context)
+        return com.markdoc.app.DeviceUtils.deviceInfo(context)
     }
 
     companion object {

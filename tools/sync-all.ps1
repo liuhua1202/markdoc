@@ -48,4 +48,4 @@ Write-Host "下一步:" -ForegroundColor Yellow
 Write-Host "  • Android: cd android-app; .\gradlew.bat assembleDebug" -ForegroundColor White
 Write-Host "  • Desktop: cd desktop-app; npm install; npm start" -ForegroundColor White
 Write-Host "  • iOS:     cd ios-app; npm install; npx cap sync (需要 Mac)" -ForegroundColor White
-Write-Host "  • PWA:     makemdown-pwa.zip 已包含最新资源" -ForegroundColor White
+Write-Host "  • PWA:     markdoc-pwa.zip 已包含最新资源" -ForegroundColor White

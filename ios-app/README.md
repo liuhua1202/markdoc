@@ -54,7 +54,7 @@ npm run open
 
 - Xcode → 项目 → Signing & Capabilities
 - Team: 选择你的 Apple Developer 账号（免费个人账号也行）
-- Bundle Identifier: 改成你自己的（默认 `com.makemdown.app` 可能冲突）
+- Bundle Identifier: 改成你自己的（默认 `com.markdoc.app` 可能冲突）
 - 勾选 "Sign to Run Locally"
 
 ### 2. 真机调试

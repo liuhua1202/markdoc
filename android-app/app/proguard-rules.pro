@@ -5,7 +5,7 @@
 }
 
 # 保留 JS 接口
--keepclassmembers class com.makemdown.app.** {
+-keepclassmembers class com.markdoc.app.** {
     @android.webkit.JavascriptInterface <methods>;
 }
 

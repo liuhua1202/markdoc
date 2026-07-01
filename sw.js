@@ -13,8 +13,8 @@
  */
 
 const VERSION = 'v1.0.0';
-const CACHE_STATIC = `makemdown-static-${VERSION}`;
-const CACHE_RUNTIME = `makemdown-runtime-${VERSION}`;
+const CACHE_STATIC = `markdoc-static-${VERSION}`;
+const CACHE_RUNTIME = `markdoc-runtime-${VERSION}`;
 
 const STATIC_ASSETS = [
   './',

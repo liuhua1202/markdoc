@@ -1,4 +1,4 @@
-package com.makemdown.app
+package com.markdoc.app
 
 import android.content.Context
 import android.os.Build
@@ -16,7 +16,7 @@ import java.util.Locale
  * 任何未捕获的崩溃都会：
  * 1. 写入 logs/crash_YYYYMMDD_HHMMSS.log
  * 2. 触发系统默认崩溃处理（保留 ANR / 系统崩溃体验）
- * 3. 用户可以用 adb 拉取日志：adb pull /data/data/com.makemdown.app/files/logs/
+ * 3. 用户可以用 adb 拉取日志：adb pull /data/data/com.markdoc.app/files/logs/
  *
  * 这是开发期的救命稻草 —— 闪退时不需要 USB 调试就能定位问题。
  */

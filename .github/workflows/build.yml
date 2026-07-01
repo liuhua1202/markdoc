@@ -96,7 +96,7 @@ jobs:
         if: inputs.platform == 'all' || inputs.platform == 'web'
         run: |
           cd public
-          zip -r ../makemdown-pwa.zip . -x "*.DS_Store"
+          zip -r ../markdoc-pwa.zip . -x "*.DS_Store"
 
       - name: 上传所有产物
         uses: actions/upload-artifact@v4
@@ -108,6 +108,6 @@ jobs:
             desktop-app/dist/*.AppImage
             desktop-app/dist/*.deb
             android-app/app/build/outputs/apk/**/*.apk
-            makemdown-pwa.zip
+            markdoc-pwa.zip
           retention-days: 7
           if-no-files-found: ignore

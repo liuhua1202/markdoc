@@ -1,5 +1,5 @@
 {
-  "appId": "com.makemdown.app",
+  "appId": "com.markdoc.app",
   "appName": "马克档",
   "webDir": "www",
   "bundledWebRuntime": false,
