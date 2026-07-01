@@ -25,12 +25,36 @@ jobs:
       - name: 同步 Web 资源
         shell: pwsh
         run: |
+          # 与 release.yml 同源:从根目录同步完整 Web 资源到各平台
+          $rootFiles = @("index.html", "manifest.json", "sw.js", "logo.svg")
+          $rootDirs  = @("vendor", "icons")
+
           New-Item -ItemType Directory -Force -Path "android-app/app/src/main/assets" -ErrorAction SilentlyContinue | Out-Null
-          Copy-Item "src/index.html" "android-app/app/src/main/assets/index.html" -Force
-          Copy-Item "src/index.html" "desktop-app/src/index.html" -Force
-          Copy-Item "src/index.html" "ios-app/www/index.html" -Force
-          Copy-Item "src/index.html" "public/index.html" -Force
-          Write-Host "✓ 同步完成" -ForegroundColor Green
+          New-Item -ItemType Directory -Force -Path "desktop-app/src" -ErrorAction SilentlyContinue | Out-Null
+          New-Item -ItemType Directory -Force -Path "ios-app/www" -ErrorAction SilentlyContinue | Out-Null
+          New-Item -ItemType Directory -Force -Path "public" -ErrorAction SilentlyContinue | Out-Null
+
+          # Android assets(完整)
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) { Copy-Item $f "android-app/app/src/main/assets/$f" -Force }
+          }
+          foreach ($d in $rootDirs) {
+            if (Test-Path $d) {
+              New-Item -ItemType Directory -Force -Path "android-app/app/src/main/assets/$d" | Out-Null
+              Copy-Item "$d/*" "android-app/app/src/main/assets/$d/" -Recurse -Force
+            }
+          }
+
+          # Desktop / iOS / public(仅 index.html + manifest/sw.js/logo)
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) {
+              Copy-Item $f "desktop-app/src/$f" -Force
+              Copy-Item $f "ios-app/www/$f" -Force
+              Copy-Item $f "public/$f" -Force
+            }
+          }
+
+          Write-Host "✓ 同步完成(根目录 → Android/Desktop/iOS/public)" -ForegroundColor Green
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

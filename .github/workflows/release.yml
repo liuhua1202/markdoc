@@ -23,18 +23,53 @@ jobs:
       - name: 同步 Web 资源到所有平台
         shell: pwsh
         run: |
-          # Android assets
+          # Web 资源统一从根目录读取(单仓多端架构)
+          $rootFiles = @("index.html", "manifest.json", "sw.js", "logo.svg")
+          $rootDirs  = @("vendor", "icons")
+
+          # 1. Android assets(完整 PWA 副本,WebView 离线运行需要)
           New-Item -ItemType Directory -Force -Path "android-app/app/src/main/assets" | Out-Null
-          Copy-Item "src/index.html" "android-app/app/src/main/assets/index.html" -Force
-          # Desktop src
-          Copy-Item "src/index.html" "desktop-app/src/index.html" -Force
-          # iOS www
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) { Copy-Item $f "android-app/app/src/main/assets/$f" -Force }
+          }
+          foreach ($d in $rootDirs) {
+            if (Test-Path $d) {
+              New-Item -ItemType Directory -Force -Path "android-app/app/src/main/assets/$d" | Out-Null
+              Copy-Item "$d/*" "android-app/app/src/main/assets/$d/" -Recurse -Force
+            }
+          }
+
+          # 2. Desktop src(Electron 入口)
+          New-Item -ItemType Directory -Force -Path "desktop-app/src" | Out-Null
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) { Copy-Item $f "desktop-app/src/$f" -Force }
+          }
+
+          # 3. iOS www
           New-Item -ItemType Directory -Force -Path "ios-app/www" | Out-Null
-          Copy-Item "src/index.html" "ios-app/www/index.html" -Force
-          # public
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) { Copy-Item $f "ios-app/www/$f" -Force }
+          }
+          foreach ($d in $rootDirs) {
+            if (Test-Path $d) {
+              New-Item -ItemType Directory -Force -Path "ios-app/www/$d" | Out-Null
+              Copy-Item "$d/*" "ios-app/www/$d/" -Recurse -Force
+            }
+          }
+
+          # 4. public(PWA 部署目录)
           New-Item -ItemType Directory -Force -Path "public" | Out-Null
-          Copy-Item "src/index.html" "public/index.html" -Force
-          Write-Host "✓ 同步完成" -ForegroundColor Green
+          foreach ($f in $rootFiles) {
+            if (Test-Path $f) { Copy-Item $f "public/$f" -Force }
+          }
+          foreach ($d in $rootDirs) {
+            if (Test-Path $d) {
+              New-Item -ItemType Directory -Force -Path "public/$d" | Out-Null
+              Copy-Item "$d/*" "public/$d/" -Recurse -Force
+            }
+          }
+
+          Write-Host "✓ 同步完成(根目录 → Android/Desktop/iOS/public)" -ForegroundColor Green
 
       - name: 上传构建产物（给后续 jobs 用）
         uses: actions/upload-artifact@v4

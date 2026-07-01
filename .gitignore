@@ -90,3 +90,15 @@ secrets/
 # Temp
 tmp/
 temp/
+
+# Gradle wrapper 调试残留(jar 解压后产物)
+# 绝对不要在仓库根目录出现这些文件
+/META-INF/
+/org/
+/gradle-wrapper.jar
+/gradle-wrapper-classpath.properties
+/gradle-wrapper-parameter-names.properties
+/gradle-wrapper-shared-classpath.properties
+/gradle-wrapper-shared-parameter-names.properties
+/gradle-cli-classpath.properties
+/gradle-cli-parameter-names.properties
