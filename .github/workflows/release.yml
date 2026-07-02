@@ -419,7 +419,8 @@ jobs:
       - name: 下载所有产物
         uses: actions/download-artifact@v4
         with:
-          pattern: '*-build'
+          # 拉取全部平台产物(含 web-ppa),而不是只匹配 *-build
+          pattern: '*'
           path: artifacts
           merge-multiple: true
 
