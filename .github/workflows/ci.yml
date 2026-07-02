@@ -67,7 +67,8 @@ jobs:
       - name: 验证 SAMPLE_DOC 包含所有语法
         run: |
           # 示例文档应展示所有支持的语法
-          for pattern in "# 欢迎使用" "```javascript" "```python" "```mermaid" "\$\$" "graph TD" "task-list" "## 📊"; do
+          # 用单引号包裹 pattern，避免 YAML/shell 双重转义和反引号命令替换
+          for pattern in '# 欢迎使用' '```javascript' '```python' '```mermaid' '$$' 'graph TD' 'task-list' '## 📊'; do
             if ! grep -qF "$pattern" index.html; then
               echo "⚠️ 示例文档可能缺少: $pattern"
             else
