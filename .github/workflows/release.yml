@@ -79,7 +79,6 @@ jobs:
             desktop-app/src/
             desktop-app/package.json
             desktop-app/package-lock.json
-            desktop-app/build/
             android-app/
             ios-app/
             public/
@@ -112,7 +111,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
           Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
           Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
-          Copy-Item -Recurse -Force "_source/desktop-app/build" "desktop-app/build"
+          # desktop-app/build/ 来自 checkout(repo 已有),prepared-source 不再单独打包
           # 写 entitlements（macOS 签名必需）
           if (-not (Test-Path "desktop-app/build")) { New-Item -ItemType Directory -Force -Path "desktop-app/build" | Out-Null }
           @'
@@ -221,7 +220,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
           Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
           Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
-          Copy-Item -Recurse -Force "_source/desktop-app/build" "desktop-app/build"
+          # desktop-app/build/ 来自 checkout(repo 已有),prepared-source 不再单独打包
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -271,7 +270,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path "desktop-app" | Out-Null
           Copy-Item -Recurse -Force "_source/desktop-app/src" "desktop-app/src"
           Copy-Item "_source/desktop-app/package.json" "desktop-app/package.json" -Force
-          Copy-Item -Recurse -Force "_source/desktop-app/build" "desktop-app/build"
+          # desktop-app/build/ 来自 checkout(repo 已有),prepared-source 不再单独打包
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
