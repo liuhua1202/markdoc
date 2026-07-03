@@ -251,37 +251,8 @@
       flex-shrink: 0;
     }
 
-    /* 视图切换按钮组 */
-    .view-switch {
-      display: inline-flex;
-      background: var(--bg-soft);
-      border-radius: 12px;
-      padding: 3px;
-      gap: 2px;
-    }
-
-    .view-switch button {
-      min-width: 36px;
-      min-height: 36px;
-      padding: 0 8px;
-      border: none;
-      background: transparent;
-      color: var(--fg-muted);
-      border-radius: 9px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .view-switch button.active {
-      background: var(--bg-elev);
-      color: var(--brand);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    }
-
     /* ============================================================
-       抽屉菜单（导出等更多操作）
+       抽屉菜单（导出等更多操作）— 从左侧滑出
        ============================================================ */
     .drawer-mask {
       position: fixed;
@@ -292,35 +263,39 @@
       z-index: 1000;
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;  /* Android WebView 防御:隐藏时绝不吃点击,避免抽屉一开即关 */
       transition: opacity 0.2s ease, visibility 0.2s ease;
     }
 
-    .drawer-mask.show { opacity: 1; visibility: visible; }
+    .drawer-mask.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;  /* 仅在显示时接收点击 */
+    }
 
     .drawer {
       position: fixed;
+      top: 0;
       bottom: 0;
       left: 0;
-      right: 0;
+      width: 320px;
+      max-width: 85vw;
       background: var(--bg-elev);
-      border-radius: 24px 24px 0 0;
+      border-radius: 0 16px 16px 0;
       box-shadow: var(--shadow-lg);
       z-index: 1001;
-      transform: translateY(100%);
+      transform: translateX(-100%);
       transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-      padding: 12px 16px calc(env(safe-area-inset-bottom) + 16px);
-      max-height: 80vh;
+      padding: 16px 16px 16px calc(env(safe-area-inset-left) + 16px);
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .drawer.show { transform: translateY(0); }
+    .drawer.show { transform: translateX(0); }
 
+    /* 侧边抽屉不需要顶部抓手条,隐藏 */
     .drawer-handle {
-      width: 36px;
-      height: 4px;
-      background: var(--border-strong);
-      border-radius: 2px;
-      margin: 0 auto 16px;
+      display: none;
     }
 
     .drawer-title {
@@ -406,28 +381,21 @@
       min-height: 0;
     }
 
-    /* 单栏模式（仅编辑器 或 仅预览） */
-    .workspace.single .editor-pane,
-    .workspace.single .preview-pane {
-      flex: 1 1 100% !important;
-      height: 100% !important;
-    }
-
-    .workspace.single .divider,
-    .workspace.single .pane.hidden {
-      display: none !important;
-    }
-
-    /* 分屏模式（默认） */
-    .editor-pane,
-    .preview-pane {
-      flex: 1 1 50%;
+    /* 编辑视图:仅显示编辑器,预览隐藏(Render仍跑给 Reader 用) */
+    .editor-pane {
+      flex: 1 1 100%;
       min-height: 0;
       overflow: hidden;
       display: flex;
       flex-direction: column;
       position: relative;
-      transition: flex-basis 0.05s linear;
+    }
+
+    .preview-pane.hidden {
+      flex: 0;
+      height: 0;
+      overflow: hidden;
+      pointer-events: none;
     }
 
     .pane.hidden { display: none; }
@@ -509,42 +477,6 @@
       text-align: right;
       white-space: pre;
       overflow: hidden;
-    }
-
-    /* ============================================================
-       拖拽分割条
-       ============================================================ */
-    .divider {
-      flex-shrink: 0;
-      height: 14px;
-      background: var(--bg-soft);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      cursor: row-resize;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: none;
-      transition: background 0.15s ease;
-    }
-
-    .divider::before {
-      content: '';
-      width: 36px;
-      height: 3px;
-      background: var(--border-strong);
-      border-radius: 2px;
-    }
-
-    .divider:active,
-    .divider.dragging {
-      background: var(--brand-soft);
-    }
-
-    .divider:active::before,
-    .divider.dragging::before {
-      background: var(--brand);
     }
 
     /* ============================================================
@@ -1970,28 +1902,14 @@
   <div id="app">
 
     <!-- 顶部导航栏 -->
-    <header class="navbar">
+    <header id="navbar" class="navbar">
       <div class="nav-brand">
         <img src="logo.svg" class="nav-logo" alt="logo" />
         <div class="nav-title">马克档</div>
       </div>
 
       <div class="nav-actions">
-        <!-- 视图切换 -->
-        <div class="view-switch" role="tablist" aria-label="视图切换">
-          <button id="view-edit" data-tip="仅源码" aria-label="仅源码">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </button>
-          <button id="view-split" data-tip="分屏" aria-label="分屏" class="active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-          </button>
-          <button id="view-preview" data-tip="仅预览" aria-label="仅预览">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-          <button id="view-reader" data-tip="阅读" aria-label="阅读模式">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-          </button>
-        </div>
+        <!-- 视图模式:默认编辑器全屏;阅读模式通过双击 R 快捷键进入 -->
 
         <!-- 主题切换 -->
         <button id="theme-toggle" class="nav-btn" data-tip="主题" aria-label="主题切换">
@@ -2085,11 +2003,8 @@
         </div>
       </section>
 
-      <!-- 拖拽分割条 -->
-      <div class="divider" id="divider" role="separator" aria-orientation="horizontal"></div>
-
-      <!-- 预览面板 -->
-      <section class="preview-pane" id="preview-pane">
+      <!-- 预览面板:在编辑视图隐藏(仅给 Reader 复制内容用),阅读视图下隐藏整个工作区 -->
+      <section class="preview-pane hidden" id="preview-pane">
         <div class="pane-header">
           <span>预览 · PREVIEW</span>
           <span class="right" id="preview-info">渲染中...</span>
@@ -2252,7 +2167,6 @@
       activeDoc: 'markdoc.activeDocId.v1',    // 当前激活文档 ID
       theme: 'markdoc.theme.v1',
       viewMode: 'markdoc.viewMode.v1',
-      splitRatio: 'markdoc.splitRatio.v1',
       syncConfig: 'markdoc.syncConfig.v1',    // 云同步配置
       lastSync: 'markdoc.lastSync.v1',        // 最后同步时间
     };
@@ -2368,11 +2282,12 @@ def fibonacci(n):
 
 ## 🎯 下一步
 
-1. 点击右上角 **分屏** 切换视图模式
-2. 点击 **🌗** 切换浅色 / 深色 / 跟随系统
-3. 点击 **⋯** 导出 / 导入 / 清空
-4. 点击 **🤖** 体验 AI 助手
-5. 点击 **📑** 查看文档大纲
+1. 编辑器内随意书写 Markdown,自动实时渲染
+2. **双击 R 键** 进入沉浸式阅读模式
+3. 点击 **🌗** 切换浅色 / 深色 / 跟随系统
+4. 点击 **⋯** 导出 / 导入 / 清空
+5. 点击 **🤖** 体验 AI 助手
+6. 点击 **📑** 查看文档大纲
 
 ---
 
@@ -2887,9 +2802,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           try { this._restoreUI(); } catch (_) {}
         }
 
-        // 恢复 ViewManager
+        // 恢复 ViewManager 状态(如果是从 reader 触发关闭则切回 edit)
         if (typeof ViewManager !== 'undefined' && ViewManager.current === 'reader') {
-          try { ViewManager.set('split', false); } catch (_) {}
+          try { ViewManager.set('edit', false); } catch (_) {}
         }
       },
 
@@ -3120,167 +3035,47 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
     };
 
     // ----------------------------------------------------------
-    // 6. 视图模式管理
+    // 6. 视图模式管理(简化:只有 edit / reader 两种)
+    //   - edit:编辑器全屏,预览保持隐藏(但渲染照旧,给 Reader 用)
+    //   - reader:reader overlay 浮层,沉浸式阅读(双击 R 进入)
+    // 旧版 localStorage 存的 split/preview/reader 自动回落到 edit。
     // ----------------------------------------------------------
     const ViewManager = {
-      current: 'split',
+      current: 'edit',
 
       init() {
-        const saved = localStorage.getItem(STORAGE_KEYS.viewMode) || 'split';
-        this.set(saved, false);
+        const saved = localStorage.getItem(STORAGE_KEYS.viewMode);
+        const mode = (saved === 'edit' || saved === 'reader') ? saved : 'edit';
+        this.set(mode, false);
       },
 
       set(mode, save = true) {
-        this.current = mode;
-        const ws = $('workspace');
-        const editor = $('editor-pane');
-        const divider = $('divider');
-        const preview = $('preview-pane');
+        const normalized = (mode === 'reader') ? 'reader' : 'edit';
+        this.current = normalized;
 
-        // 退出阅读模式（如果开着）
-        if (mode !== 'reader' && typeof Reader !== 'undefined' && Reader.isOpen) {
+        // 退出阅读模式(如果开着)
+        if (normalized !== 'reader' && typeof Reader !== 'undefined' && Reader.isOpen) {
           Reader.close();
         }
 
-        // 清理样式
-        ws.classList.remove('single');
-        editor.classList.remove('hidden');
-        divider.style.display = '';
-        preview.classList.remove('hidden');
-        editor.style.flexBasis = '';
-        preview.style.flexBasis = '';
-
-        if (mode === 'split') {
-          // 默认分屏 50/50
-        } else if (mode === 'edit') {
-          ws.classList.add('single');
-          preview.classList.add('hidden');
-        } else if (mode === 'preview') {
-          ws.classList.add('single');
-          editor.classList.add('hidden');
-        } else if (mode === 'reader') {
-          // 沉浸式阅读模式
+        if (normalized === 'edit') {
+          // 编辑视图
+          const preview = $('preview-pane');
+          if (preview) preview.classList.add('hidden');
+        } else if (normalized === 'reader') {
+          // 阅读视图
           if (typeof Reader !== 'undefined') Reader.open();
-          // 不修改工作区，而是把 App 整个遮罩
-          document.querySelector('.navbar').style.opacity = '0';
-          document.querySelector('.navbar').style.pointerEvents = 'none';
-          document.querySelector('.status-bar').style.opacity = '0';
-          document.querySelector('.status-bar').style.pointerEvents = 'none';
-          // 退出阅读时恢复
-          const restore = () => {
-            document.querySelector('.navbar').style.opacity = '';
-            document.querySelector('.navbar').style.pointerEvents = '';
-            document.querySelector('.status-bar').style.opacity = '';
-            document.querySelector('.status-bar').style.pointerEvents = '';
-          };
-          // 监听 Reader 关闭
-          if (Reader._restoreUI !== restore) {
-            Reader._restoreUI = restore;
-          }
         }
 
-        // 恢复 navbar/status-bar（如果不是 reader 模式）
-        if (mode !== 'reader') {
-          document.querySelector('.navbar').style.opacity = '';
-          document.querySelector('.navbar').style.pointerEvents = '';
-          document.querySelector('.status-bar').style.opacity = '';
-          document.querySelector('.status-bar').style.pointerEvents = '';
-        }
-
-        // 更新按钮 active
-        ['edit', 'split', 'preview', 'reader'].forEach(m => {
-          const btn = $('view-' + m);
-          if (btn) btn.classList.toggle('active', m === mode);
-        });
-
-        if (save) localStorage.setItem(STORAGE_KEYS.viewMode, mode);
-      }
-    };
-
-    // ----------------------------------------------------------
-    // 7. 拖拽分割条
-    // ----------------------------------------------------------
-    const Divider = {
-      init() {
-        const divider = $('divider');
-        let dragging = false;
-        let startY = 0;
-        let startEditorBasis = 0;
-        let startPreviewBasis = 0;
-        let workspaceHeight = 0;
-
-        const onStart = (clientY) => {
-          dragging = true;
-          divider.classList.add('dragging');
-          startY = clientY;
-          const ws = $('workspace').getBoundingClientRect();
-          workspaceHeight = ws.height;
-          const ed = $('editor-pane').getBoundingClientRect();
-          const pv = $('preview-pane').getBoundingClientRect();
-          startEditorBasis = ed.height;
-          startPreviewBasis = pv.height;
-          document.body.style.userSelect = 'none';
-          document.body.style.overflow = 'hidden';
-        };
-
-        const onMove = (clientY) => {
-          if (!dragging) return;
-          const dy = clientY - startY;
-          let newEditorH = Math.max(80, startEditorBasis + dy);
-          let newPreviewH = Math.max(80, startPreviewBasis - dy);
-          // 防止总高度超出
-          if (newEditorH + newPreviewH > workspaceHeight - 14) {
-            if (dy > 0) newEditorH = workspaceHeight - 14 - 80;
-            else newPreviewH = workspaceHeight - 14 - 80;
-          }
-          $('editor-pane').style.flex = `0 0 ${newEditorH}px`;
-          $('preview-pane').style.flex = `1 1 ${newPreviewH}px`;
-          // 保存比例
-          const ratio = newEditorH / (newEditorH + newPreviewH);
-          localStorage.setItem(STORAGE_KEYS.splitRatio, ratio.toString());
-        };
-
-        const onEnd = () => {
-          if (!dragging) return;
-          dragging = false;
-          divider.classList.remove('dragging');
-          document.body.style.userSelect = '';
-          document.body.style.overflow = '';
-        };
-
-        // 鼠标事件（桌面调试用）
-        divider.addEventListener('mousedown', (e) => { e.preventDefault(); onStart(e.clientY); });
-        document.addEventListener('mousemove', (e) => onMove(e.clientY));
-        document.addEventListener('mouseup', onEnd);
-
-        // 触摸事件（移动端）
-        divider.addEventListener('touchstart', (e) => {
-          if (e.touches.length === 1) onStart(e.touches[0].clientY);
-        }, { passive: true });
-        divider.addEventListener('touchmove', (e) => {
-          if (e.touches.length === 1) onMove(e.touches[0].clientY);
-        }, { passive: true });
-        divider.addEventListener('touchend', onEnd);
-        divider.addEventListener('touchcancel', onEnd);
-
-        // 恢复比例
-        const savedRatio = parseFloat(localStorage.getItem(STORAGE_KEYS.splitRatio));
-        if (!isNaN(savedRatio) && savedRatio > 0.1 && savedRatio < 0.9) {
-          // 等待 layout 完成
-          requestAnimationFrame(() => {
-            const ws = $('workspace').getBoundingClientRect();
-            const total = ws.height - 14;
-            const editorH = total * savedRatio;
-            const previewH = total * (1 - savedRatio);
-            $('editor-pane').style.flex = `0 0 ${editorH}px`;
-            $('preview-pane').style.flex = `1 1 ${previewH}px`;
-          });
+        // 仅持久化合法的模式(edit / reader)
+        if (save && (normalized === 'edit' || normalized === 'reader')) {
+          localStorage.setItem(STORAGE_KEYS.viewMode, normalized);
         }
       }
     };
 
     // ----------------------------------------------------------
-    // 7.5 MarkdownExtensions - 代码高亮/图表/数学公式
+    // 7. MarkdownExtensions - 代码高亮/图表/数学公式
     //
     // 懒加载策略：
     // - highlight.js 总是可用（同步加载在 <head>）
@@ -5779,10 +5574,23 @@ MIT
         const drawer = $('drawer');
         const mask = $('drawer-mask');
 
-        const open = () => { drawer.classList.add('show'); mask.classList.add('show'); };
-        const close = () => { drawer.classList.remove('show'); mask.classList.remove('show'); };
+        // 用单一标志统一开关,防止 Android WebView 偶发重放 click 导致开-关-开
+        let isOpen = false;
+        const setOpen = (next) => {
+          if (isOpen === next) return;
+          isOpen = next;
+          drawer.classList.toggle('show', next);
+          mask.classList.toggle('show', next);
+        };
+        const open = () => setOpen(true);
+        // close 只在点击的是 mask 本体(非冒泡自 drawer)时关闭
+        const close = (e) => { if (!e || e.target === mask) setOpen(false); };
 
-        $('more-btn').addEventListener('click', open);
+        $('more-btn').addEventListener('click', (e) => {
+          // 防止冒泡干扰其他监听器(MIUI WebView 已知问题)
+          e.stopPropagation();
+          open();
+        });
         mask.addEventListener('click', close);
 
         // 操作绑定
@@ -5956,7 +5764,6 @@ MIT
           if (typeof DocsUI !== 'undefined') DocsUI.init();
         });
         safe('视图模式', () => ViewManager.init());
-        safe('分割条', () => Divider.init());
         safe('抽屉菜单', () => Drawer.init());
         safe('云同步', () => { if (window.SyncManager) SyncManager.init(); });
         safe('AI 助手', () => { if (window.AIAssistant) AIAssistant.init(); });
@@ -5983,13 +5790,6 @@ MIT
 
         // 按钮事件（每个独立 try/catch）
         safe('主题按钮', () => $('theme-toggle').addEventListener('click', () => ThemeManager.cycle()));
-        safe('视图按钮', () => {
-          $('view-split').addEventListener('click', () => ViewManager.set('split'));
-          $('view-edit').addEventListener('click', () => ViewManager.set('edit'));
-          $('view-preview').addEventListener('click', () => ViewManager.set('preview'));
-          const readerBtn = $('view-reader');
-          if (readerBtn) readerBtn.addEventListener('click', () => ViewManager.set('reader'));
-        });
 
         // 全局快捷键：双击 `R` 键进入阅读模式（在非编辑状态）
         try {
