@@ -1,6 +1,6 @@
 {
   "name": "markdoc",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "马克档 · Markdown Mobile Browser (桌面版)",
   "main": "src/main.js",
   "author": {

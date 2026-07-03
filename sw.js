@@ -12,7 +12,7 @@
  * - marked.js CDN 失败时回退到本地 vendor/marked.min.js
  */
 
-const VERSION = 'v1.0.0';
+const VERSION = 'v1.0.8';
 const CACHE_STATIC = `markdoc-static-${VERSION}`;
 const CACHE_RUNTIME = `markdoc-runtime-${VERSION}`;
 

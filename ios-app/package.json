@@ -1,7 +1,7 @@
 {
   "name": "com.markdoc.app",
   "displayName": "马克档",
-  "version": "1.0.0",
+  "version": "1.0.8",
   "description": "马克档 - 你的随身文档浏览器 (iOS 版)",
   "main": "www/index.html",
   "scripts": {
