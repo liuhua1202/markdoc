@@ -155,6 +155,39 @@ const dom = new JSDOM(html, {
     check('docs-panel z-index 大于 reader', dpz > rz);
   }
 
+  console.log('\n--- 大纲和更多菜单互斥(同时只能开一个) ---');
+  // 先关 reader
+  editBtn.click();
+  await new Promise(r => setTimeout(r, 500));
+
+  // 开 outline
+  dom.window.eval('Outline.open()');
+  await new Promise(r => setTimeout(r, 200));
+  const outlineEl2 = doc.querySelector('.outline-panel');
+  const drawerEl2 = doc.getElementById('drawer');
+  check('outline 打开后 outline-panel 有 show 类', outlineEl2 && outlineEl2.classList.contains('show'));
+  check('outline 打开后 drawer 无 show 类', drawerEl2 && !drawerEl2.classList.contains('show'));
+
+  // 模拟点 more-btn(打开 drawer,大纲应自动关)
+  doc.getElementById('more-btn').click();
+  await new Promise(r => setTimeout(r, 200));
+  const outlineEl3 = doc.querySelector('.outline-panel');
+  const drawerEl3 = doc.getElementById('drawer');
+  check('打开 drawer 后 drawer 有 show 类', drawerEl3 && drawerEl3.classList.contains('show'));
+  check('打开 drawer 后 outline 自动关闭(无 show 类)', outlineEl3 && !outlineEl3.classList.contains('show'));
+
+  // 模拟关 drawer
+  doc.getElementById('drawer-mask').click();
+  await new Promise(r => setTimeout(r, 200));
+  // 再开 outline
+  dom.window.eval('Outline.open()');
+  await new Promise(r => setTimeout(r, 200));
+  const drawerEl4 = doc.getElementById('drawer');
+  check('再次开 outline 后 drawer 仍无 show 类', drawerEl4 && !drawerEl4.classList.contains('show'));
+  // 收尾:关 outline
+  dom.window.eval('Outline.close()');
+  await new Promise(r => setTimeout(r, 100));
+
   console.log('\n--- 抽屉仍正常(左滑) ---');
   const drawer = doc.getElementById('drawer');
   if (drawer) {

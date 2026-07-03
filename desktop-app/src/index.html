@@ -4163,6 +4163,13 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       open() {
         if (!this.panel) this._create();
         this._refresh();
+        // 互斥:打开大纲时关闭抽屉(更多菜单),两边不能同时显示
+        const drawer = document.getElementById('drawer');
+        const drawerMask = document.getElementById('drawer-mask');
+        if (drawer && drawer.classList.contains('show')) {
+          drawer.classList.remove('show');
+          if (drawerMask) drawerMask.classList.remove('show');
+        }
         this.panel.classList.add('show');
       },
 
@@ -5680,7 +5687,16 @@ MIT
           drawer.classList.toggle('show', next);
           mask.classList.toggle('show', next);
         };
-        const open = () => setOpen(true);
+        const open = () => {
+          // 互斥:打开抽屉时关闭大纲,两边不能同时显示
+          const outline = document.querySelector('.outline-panel');
+          const outlineMask = document.querySelector('.outline-mask');
+          if (outline && outline.classList.contains('show')) {
+            outline.classList.remove('show');
+            if (outlineMask) outlineMask.classList.remove('show');
+          }
+          setOpen(true);
+        };
         // close 只在点击的是 mask 本体(非冒泡自 drawer)时关闭
         const close = (e) => { if (!e || e.target === mask) setOpen(false); };
 
