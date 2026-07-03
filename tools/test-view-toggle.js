@@ -48,35 +48,37 @@ const dom = new JSDOM(html, {
     check('CSS 含 outline-panel translateX(-100%)', /outline-panel[^}]*translateX\(-100%/.test(sheetText));
   }
 
-  console.log('\n--- 单个图标切换按钮(图标随状态切换) ---');
-  const toggleBtn = doc.getElementById('view-toggle-btn');
-  const toggleIcon = doc.getElementById('view-toggle-icon');
-  check('view-toggle-btn 存在', !!toggleBtn);
-  check('view-toggle-icon 存在', !!toggleIcon);
-  check('view-toggle-btn 是 nav-btn 样式', toggleBtn && toggleBtn.classList.contains('nav-btn'));
-  check('默认 data-mode-target=reader(图标提示"切到阅读")', toggleBtn && toggleBtn.getAttribute('data-mode-target') === 'reader');
-  check('默认图标含 "book" 路径(2 path)', toggleIcon && toggleIcon.querySelectorAll('path').length === 2);
-  check('默认 aria-label 提示"切到阅读"', toggleBtn && /阅读/.test(toggleBtn.getAttribute('aria-label') || ''));
-  check('默认按钮不 active(还在 edit)', toggleBtn && !toggleBtn.classList.contains('active'));
+  console.log('\n--- pill 开关(两个图标按钮:铅笔=编辑,书=阅读) ---');
+  const toggle = doc.getElementById('view-toggle');
+  const editBtn = doc.getElementById('view-btn-edit');
+  const readBtn = doc.getElementById('view-btn-read');
+  check('view-toggle pill 容器存在', !!toggle);
+  check('view-btn-edit 存在', !!editBtn);
+  check('view-btn-read 存在', !!readBtn);
+  check('pill 包含两个按钮', toggle && toggle.querySelectorAll('button').length === 2);
+  check('编辑按钮是 SVG 图标(2 path 铅笔)', editBtn && editBtn.querySelectorAll('path').length === 2);
+  check('阅读按钮是 SVG 图标(2 path 书)', readBtn && readBtn.querySelectorAll('path').length === 2);
+  check('默认 编辑按钮 active', editBtn && editBtn.classList.contains('active'));
+  check('默认 阅读按钮 not active', readBtn && !readBtn.classList.contains('active'));
+  check('默认 编辑按钮 aria-selected=true', editBtn && editBtn.getAttribute('aria-selected') === 'true');
+  check('默认 阅读按钮 aria-selected=false', readBtn && readBtn.getAttribute('aria-selected') === 'false');
 
-  // 记录点击前按钮位置(关键:切换时位置不能变)
-  const rectBefore = toggleBtn.getBoundingClientRect();
+  // 记录点击前 pill 位置(关键:切换时位置不能变)
+  const rectBefore = toggle.getBoundingClientRect();
   const xBefore = rectBefore.x;
   const yBefore = rectBefore.y;
 
-  console.log('\n--- 点击切到阅读模式 ---');
-  if (toggleBtn) toggleBtn.click();
+  console.log('\n--- 点击阅读按钮切到阅读模式 ---');
+  if (readBtn) readBtn.click();
   await new Promise(r => setTimeout(r, 200));
   check('Reader 浮层出现', !!doc.getElementById('reader'));
   check('navbar data-mode=reader', doc.getElementById('navbar').getAttribute('data-mode') === 'reader');
-  check('图标变成铅笔(2 path,含外框 + 笔尖)', toggleIcon.querySelectorAll('path').length === 2);
-  check('切到阅读后 SVG 内部 HTML 变化了', toggleIcon.innerHTML.length > 30);
-  check('data-mode-target=edit(切回编辑)', toggleBtn.getAttribute('data-mode-target') === 'edit');
-  check('按钮变 active 态(在阅读模式)', toggleBtn.classList.contains('active'));
-  check('aria-label 变"切到编辑"', /编辑/.test(toggleBtn.getAttribute('aria-label') || ''));
+  check('阅读按钮变 active', readBtn.classList.contains('active'));
+  check('编辑按钮取消 active', !editBtn.classList.contains('active'));
+  check('阅读按钮 aria-selected=true', readBtn.getAttribute('aria-selected') === 'true');
+  check('编辑按钮 aria-selected=false', editBtn.getAttribute('aria-selected') === 'false');
 
-  // 阅读模式下隐藏其他 nav 按钮(只留 brand 和 toggle)
-  const nav = doc.getElementById('navbar');
+  // 阅读模式下隐藏其他 nav 按钮(只留 brand 和 pill)
   const docsBtn = doc.getElementById('docs-btn');
   const outlineBtn = doc.getElementById('outline-btn');
   const moreBtn = doc.getElementById('more-btn');
@@ -85,41 +87,37 @@ const dom = new JSDOM(html, {
   check('阅读模式下 outline-btn 隐藏', outlineBtn && dom.window.getComputedStyle(outlineBtn).display === 'none');
   check('阅读模式下 more-btn 隐藏', moreBtn && dom.window.getComputedStyle(moreBtn).display === 'none');
   check('阅读模式下 theme-toggle 隐藏', themeBtn && dom.window.getComputedStyle(themeBtn).display === 'none');
-  check('阅读模式下 view-toggle-btn 仍然可见', dom.window.getComputedStyle(toggleBtn).display !== 'none');
+  check('阅读模式下 pill 仍然可见', dom.window.getComputedStyle(toggle).display !== 'none');
 
-  // 关键断言:按钮位置在切换前后保持不变
-  const rectInRead = toggleBtn.getBoundingClientRect();
-  check('按钮 X 位置不变(关键 UX 需求)', Math.abs(rectInRead.x - xBefore) < 1);
-  check('按钮 Y 位置不变(关键 UX 需求)', Math.abs(rectInRead.y - yBefore) < 1);
+  // 关键断言:pill 位置在切换前后保持不变
+  const rectInRead = toggle.getBoundingClientRect();
+  check('pill X 位置不变(关键 UX 需求)', Math.abs(rectInRead.x - xBefore) < 1);
+  check('pill Y 位置不变(关键 UX 需求)', Math.abs(rectInRead.y - yBefore) < 1);
 
   // reader 不应该覆盖 navbar 区域
   const navbar = doc.getElementById('navbar');
   const reader = doc.getElementById('reader');
   check('reader 元素存在', !!reader);
   if (reader && navbar) {
-    // jsdom 不解析 CSS 变量 — rs.top 会是原始的 "var(--navbar-h, 56px)" 字符串
-    // 真正的浏览器里这个值会被解析成 ~56px,把 reader 推到 navbar 下方
     const rs = dom.window.getComputedStyle(reader);
     check('reader top 用了 var(--navbar-h) 变量(关键)', /var\(--navbar-h/.test(rs.top));
     check('reader top 不是 inset: 0(否则会盖住 navbar)', rs.top !== '0px');
-    // 也检查 --navbar-h 变量被设置过
     const navH = dom.window.getComputedStyle(doc.documentElement).getPropertyValue('--navbar-h');
     check('--navbar-h CSS 变量被设置', navH && /px$/.test(navH.trim()));
   }
 
-  console.log('\n--- 阅读模式下点击同一按钮切回编辑 ---');
-  toggleBtn.click();
+  console.log('\n--- 阅读模式下点击编辑按钮切回编辑 ---');
+  editBtn.click();
   await new Promise(r => setTimeout(r, 500));
   check('Reader 浮层消失(等 500ms)', !doc.getElementById('reader'));
   check('navbar data-mode=edit', doc.getElementById('navbar').getAttribute('data-mode') === 'edit');
-  check('图标恢复 book(2 path)', toggleIcon.querySelectorAll('path').length === 2);
-  check('data-mode-target=reader', toggleBtn.getAttribute('data-mode-target') === 'reader');
-  check('按钮 active 取消', !toggleBtn.classList.contains('active'));
+  check('编辑按钮重新 active', editBtn.classList.contains('active'));
+  check('阅读按钮取消 active', !readBtn.classList.contains('active'));
 
   // 关键断言:再次确认切回后位置还是不变
-  const rectAfter = toggleBtn.getBoundingClientRect();
-  check('按钮 X 位置始终不变(二次确认)', Math.abs(rectAfter.x - xBefore) < 1);
-  check('按钮 Y 位置始终不变(二次确认)', Math.abs(rectAfter.y - yBefore) < 1);
+  const rectAfter = toggle.getBoundingClientRect();
+  check('pill X 位置始终不变(二次确认)', Math.abs(rectAfter.x - xBefore) < 1);
+  check('pill Y 位置始终不变(二次确认)', Math.abs(rectAfter.y - yBefore) < 1);
 
   console.log('\n--- 抽屉仍正常(左滑) ---');
   const drawer = doc.getElementById('drawer');

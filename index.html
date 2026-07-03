@@ -245,7 +245,7 @@
       background: var(--brand-soft);
     }
 
-    /* 视图模式 toggle:编辑 / 阅读(类似 iOS segmented control) */
+    /* 视图模式 toggle:编辑 / 阅读(类似 iOS segmented control,常驻 navbar) */
     .view-toggle {
       display: inline-flex;
       background: var(--bg-soft);
@@ -257,7 +257,8 @@
 
     .view-toggle-btn {
       min-height: 36px;
-      padding: 0 12px;
+      min-width: 38px;
+      padding: 0 10px;
       border: none;
       background: transparent;
       color: var(--fg-muted);
@@ -267,6 +268,14 @@
       cursor: pointer;
       font-family: inherit;
       transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .view-toggle-btn svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
 
     .view-toggle-btn:hover {
@@ -1969,14 +1978,22 @@
       </div>
 
       <div class="nav-actions">
-        <!-- 视图模式 toggle:单个图标按钮,位置始终不变(编辑/阅读两种状态切换图标) -->
-        <button class="nav-btn view-toggle-btn" id="view-toggle-btn" data-tip="阅读" aria-label="切换到阅读视图" data-mode-target="reader">
-          <svg id="view-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <!-- 默认:书(open book)= 提示"点我进入阅读" -->
-            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-          </svg>
-        </button>
+        <!-- 视图模式 toggle:pill 形式,左编辑(铅笔)/右阅读(书),常驻位置不变
+             经典 iOS segmented control 风格,点击对应侧直接切到该模式 -->
+        <div class="view-toggle" id="view-toggle" role="tablist" aria-label="视图模式">
+          <button class="view-toggle-btn" id="view-btn-edit" role="tab" aria-label="编辑视图" data-mode="edit" data-tip="编辑">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="view-toggle-btn" id="view-btn-read" role="tab" aria-label="阅读视图" data-mode="reader" data-tip="阅读">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </button>
+        </div>
 
         <!-- 主题切换 -->
         <button id="theme-toggle" class="nav-btn" data-tip="主题" aria-label="主题切换">
@@ -3101,14 +3118,6 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
     const ViewManager = {
       current: 'edit',
 
-      // 图标 SVG(两套:edit=铅笔 / reader=书)
-      _icons: {
-        // open book(点击切到阅读)— 编辑模式下显示
-        reader: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
-        // pencil(点击切到编辑)— 阅读模式下显示
-        edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
-      },
-
       init() {
         const saved = localStorage.getItem(STORAGE_KEYS.viewMode);
         const mode = (saved === 'edit' || saved === 'reader') ? saved : 'edit';
@@ -3117,33 +3126,27 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       },
 
       _bindToggle() {
-        // 单个图标按钮:点击在 edit / reader 之间切换
-        const btn = $('view-toggle-btn');
-        if (btn) btn.addEventListener('click', () => {
-          this.set(this.current === 'reader' ? 'edit' : 'reader');
-        });
+        // pill 上的两个按钮:点左 → 编辑,点右 → 阅读
+        const editBtn = $('view-btn-edit');
+        const readBtn = $('view-btn-read');
+        if (editBtn) editBtn.addEventListener('click', () => this.set('edit'));
+        if (readBtn) readBtn.addEventListener('click', () => this.set('reader'));
       },
 
       _syncToggle() {
-        // 当前在 edit 模式 → 显示"书"图标(点它进入阅读)
-        // 当前在 reader 模式 → 显示"铅笔"图标(点它返回编辑)
-        const btn = $('view-toggle-btn');
-        if (!btn) return;
-        const icon = $('view-toggle-icon');
+        // 同步两按钮 active + aria-selected(经典 segmented control 行为)
+        const editBtn = $('view-btn-edit');
+        const readBtn = $('view-btn-read');
+        if (!editBtn || !readBtn) return;
         const isEdit = this.current === 'edit';
-        const target = isEdit ? 'reader' : 'edit';
-        if (icon && this._icons[target]) {
-          icon.innerHTML = this._icons[target];
-        }
-        btn.setAttribute('data-tip', target === 'reader' ? '阅读' : '编辑');
-        btn.setAttribute('aria-label', target === 'reader' ? '切换到阅读视图' : '切换到编辑视图');
-        btn.setAttribute('data-mode-target', target);
-        btn.classList.toggle('active', !isEdit);  // 视觉高亮(在 reader 时)
+        editBtn.classList.toggle('active', isEdit);
+        readBtn.classList.toggle('active', !isEdit);
+        editBtn.setAttribute('aria-selected', String(isEdit));
+        readBtn.setAttribute('aria-selected', String(!isEdit));
       },
 
       set(mode, save = true) {
         const normalized = (mode === 'reader') ? 'reader' : 'edit';
-        const prev = this.current;
         this.current = normalized;
 
         // 退出阅读模式(如果开着)
@@ -3164,7 +3167,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         const navbar = document.getElementById('navbar');
         if (navbar) navbar.setAttribute('data-mode', normalized);
 
-        // 同步 toggle 按钮(图标 + 提示)
+        // 同步 toggle 按钮高亮
         this._syncToggle();
 
         // 仅持久化合法的模式(edit / reader)
