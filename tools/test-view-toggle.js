@@ -78,15 +78,15 @@ const dom = new JSDOM(html, {
   check('阅读按钮 aria-selected=true', readBtn.getAttribute('aria-selected') === 'true');
   check('编辑按钮 aria-selected=false', editBtn.getAttribute('aria-selected') === 'false');
 
-  // 阅读模式下隐藏其他 nav 按钮(只留 brand 和 pill)
+  // 阅读模式下 navbar 所有按钮都常驻可见(用户要求)
   const docsBtn = doc.getElementById('docs-btn');
   const outlineBtn = doc.getElementById('outline-btn');
   const moreBtn = doc.getElementById('more-btn');
   const themeBtn = doc.getElementById('theme-toggle');
-  check('阅读模式下 docs-btn 隐藏', docsBtn && dom.window.getComputedStyle(docsBtn).display === 'none');
-  check('阅读模式下 outline-btn 隐藏', outlineBtn && dom.window.getComputedStyle(outlineBtn).display === 'none');
-  check('阅读模式下 more-btn 隐藏', moreBtn && dom.window.getComputedStyle(moreBtn).display === 'none');
-  check('阅读模式下 theme-toggle 隐藏', themeBtn && dom.window.getComputedStyle(themeBtn).display === 'none');
+  check('阅读模式下 docs-btn 仍然可见', docsBtn && dom.window.getComputedStyle(docsBtn).display !== 'none');
+  check('阅读模式下 outline-btn 仍然可见', outlineBtn && dom.window.getComputedStyle(outlineBtn).display !== 'none');
+  check('阅读模式下 more-btn 仍然可见', moreBtn && dom.window.getComputedStyle(moreBtn).display !== 'none');
+  check('阅读模式下 theme-toggle 仍然可见', themeBtn && dom.window.getComputedStyle(themeBtn).display !== 'none');
   check('阅读模式下 pill 仍然可见', dom.window.getComputedStyle(toggle).display !== 'none');
 
   // 关键断言:pill 位置在切换前后保持不变

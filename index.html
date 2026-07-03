@@ -294,15 +294,8 @@
       flex-shrink: 0;
     }
 
-    /* 阅读模式下隐藏编辑器专属的 navbar 按钮 — 保留 brand 和 view-toggle
-       这样 navbar 在两种模式下都常驻可见,view-toggle 位置永远不变 */
-    #navbar[data-mode="reader"] .nav-btn:not(.view-toggle-btn) {
-      display: none;
-    }
-    /* 同样隐藏抽屉(更多菜单)在 read 模式下的入口(没有意义) */
-    #navbar[data-mode="reader"] #more-btn {
-      display: none;
-    }
+    /* 之前曾经阅读模式下隐藏 docs/outline/more/theme — 用户反馈要全保留,
+       navbar 全部按钮两种视图下都常驻可见,view-toggle 位置永远不变 */
 
     /* ============================================================
        抽屉菜单（导出等更多操作）— 从左侧滑出
