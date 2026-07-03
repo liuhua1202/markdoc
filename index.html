@@ -1761,10 +1761,21 @@
 
     /* ============================================================
        工具提示（主题/视图按钮长按）
-       — 之前 z-index: 100,被 reader(1500)/drawer(1601)/outline(1601)/
-         find-panel(1700) 全部盖住,长按看不到提示
+
+       关键坑:.nav-btn:active 有 transform: scale(0.94),
+       transform 会创建独立的 stacking context,把 tooltip 困在 button
+       内部的小世界。tooltip 自身 z-index 再高,也是 button 内的层级,
+       外面的 reader(1500)/drawer(1601)/outline(1601)/find(1700)
+       在 root stacking context 里直接盖住 button 本身(0)。
+
+       修复:[data-tip]:active 给 button 一个超高的 z-index,让
+       button 的 stacking context 直接升到顶,内部的 ::after
+       自动跟着浮到所有浮层之上。
        ============================================================ */
     [data-tip] { position: relative; }
+    [data-tip]:active {
+      z-index: 3000;   /* 关键:active 时把整个 button 抬到所有浮层之上 */
+    }
     [data-tip]:active::after {
       content: attr(data-tip);
       position: absolute;
@@ -1778,7 +1789,7 @@
       font-size: 11px;
       white-space: nowrap;
       pointer-events: none;
-      z-index: 2000;   /* 高于所有浮层:reader/drawer/outline/docs/find */
+      z-index: 1;   /* 在 button(3000)的 stacking context 内,保持正向叠放 */
     }
 
     /* ============================================================

@@ -189,22 +189,28 @@ const dom = new JSDOM(html, {
   await new Promise(r => setTimeout(r, 100));
 
   console.log('\n--- data-tip 工具提示 z-index 高于所有浮层 ---');
-  // 关键:navbar 按钮长按弹出的提示要盖在所有浮层之上
-  // 模拟 :active 状态以触发 ::after,然后检查 z-index
+  // 关键:.nav-btn:active 有 transform,会创建独立 stacking context
+  //       把 tooltip ::after 困在 button 内,无法浮出 reader(1500) 等浮层
+  // 修复:[data-tip]:active 给 button 自身 z-index: 3000,把整个 stacking context 抬到顶
   const themeBtn2 = doc.getElementById('theme-toggle');
   if (themeBtn2 && themeBtn2.hasAttribute('data-tip')) {
     check('theme-toggle 按钮带 data-tip', true);
-    // 直接读 ::after 的 z-index(用 getComputedStyle 在 :active 伪类下)
-    // jsdom 不支持 :active,但能从 CSS 源文本验证
     const sheets = doc.querySelectorAll('style');
     let cssText = '';
     sheets.forEach(s => cssText += s.textContent + '\n');
-    const tipMatch = cssText.match(/\[data-tip\]:active::after\s*\{[^}]*z-index:\s*(\d+)/);
-    if (tipMatch) {
-      const tipZ = parseInt(tipMatch[1], 10);
-      check('data-tip ::after z-index 至少 2000(高于所有浮层)', tipZ >= 2000);
+    // 关键断言:[data-tip]:active 的 z-index 必须足够高
+    const activeMatch = cssText.match(/\[data-tip\]:active\s*\{[^}]*z-index:\s*(\d+)/);
+    if (activeMatch) {
+      const z = parseInt(activeMatch[1], 10);
+      check('[data-tip]:active z-index 至少 3000(覆盖 reader/drawer/find 等)', z >= 3000);
     } else {
-      check('data-tip ::after 规则包含 z-index', false);
+      check('[data-tip]:active 规则包含 z-index', false);
+    }
+    // ::after 自身在 button stacking context 内,z-index >= 1 即可(已自动浮到顶)
+    const afterMatch = cssText.match(/\[data-tip\]:active::after\s*\{[^}]*z-index:\s*(\d+)/);
+    if (afterMatch) {
+      const z2 = parseInt(afterMatch[1], 10);
+      check('[data-tip]:active::after z-index >= 1(button stacking context 内部正向叠放)', z2 >= 1);
     }
   } else {
     check('theme-toggle 按钮带 data-tip', false);
