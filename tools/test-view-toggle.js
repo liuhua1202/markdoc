@@ -68,12 +68,37 @@ const dom = new JSDOM(html, {
   check('点击阅读后 编辑按钮取消 active', !editBtn.classList.contains('active'));
   check('点击阅读后 Reader 浮层出现', !!doc.getElementById('reader'));
 
-  console.log('\n--- 点击编辑按钮回到 edit ---');
-  if (editBtn) editBtn.click();
+  console.log('\n--- Reader 内部也有视图 toggle(关键:用户能在阅读模式下切回编辑) ---');
+  const reader = doc.getElementById('reader');
+  const rEditBtn = reader ? reader.querySelector('#reader-view-btn-edit') : null;
+  const rReadBtn = reader ? reader.querySelector('#reader-view-btn-read') : null;
+  const rToolbar = reader ? reader.querySelector('#reader-toolbar') : null;
+  check('reader-view-btn-edit 存在', !!rEditBtn);
+  check('reader-view-btn-read 存在', !!rReadBtn);
+  check('reader-toolbar 默认带 show 类(常驻可见)', rToolbar && rToolbar.classList.contains('show'));
+  check('reader 内 阅读按钮默认 active', rReadBtn && rReadBtn.classList.contains('active'));
+  check('reader 内 编辑按钮默认 not active', rEditBtn && !rEditBtn.classList.contains('active'));
+  check('reader-view-toggle 容器在 toolbar 里', rToolbar && !!rToolbar.querySelector('#reader-view-toggle'));
+
+  console.log('\n--- 点击 reader 内的 [编辑] 按钮能切回 edit ---');
+  if (rEditBtn) rEditBtn.click();
   await new Promise(r => setTimeout(r, 500));  // Reader.close 有 300ms 延迟移除 DOM
-  check('点击编辑后 编辑按钮重新 active', editBtn.classList.contains('active'));
-  check('点击编辑后 阅读按钮取消 active', !readBtn.classList.contains('active'));
-  check('点击编辑后 Reader 浮层消失(等 500ms)', !doc.getElementById('reader'));
+  check('切回后 Reader 浮层消失(等 500ms)', !doc.getElementById('reader'));
+  check('切回后 主 navbar 编辑按钮 active', editBtn && editBtn.classList.contains('active'));
+  check('切回后 主 navbar 阅读按钮取消 active', readBtn && !readBtn.classList.contains('active'));
+
+  console.log('\n--- 再点主 navbar 的 [阅读] 切回去 ---');
+  if (readBtn) readBtn.click();
+  await new Promise(r => setTimeout(r, 200));
+  check('再次进入 reader 浮层出现', !!doc.getElementById('reader'));
+  const r2EditBtn = doc.querySelector('#reader-view-btn-edit');
+  const r2ReadBtn = doc.querySelector('#reader-view-btn-read');
+  check('reader 内 阅读按钮又变 active', r2ReadBtn && r2ReadBtn.classList.contains('active'));
+  check('reader 内 编辑按钮又 not active', r2EditBtn && !r2EditBtn.classList.contains('active'));
+
+  console.log('\n--- 回到 edit 模式(收尾) ---');
+  if (editBtn) editBtn.click();
+  await new Promise(r => setTimeout(r, 500));
 
   console.log('\n--- 抽屉仍正常(左滑) ---');
   const drawer = doc.getElementById('drawer');

@@ -2867,12 +2867,17 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         this.el.innerHTML = `
           <div class="reader-progress"><div class="reader-progress-bar" id="reader-progress-bar"></div></div>
 
-          <div class="reader-toolbar" id="reader-toolbar">
+          <div class="reader-toolbar show" id="reader-toolbar">
             <button class="reader-btn" id="reader-back" title="退出阅读 (Esc)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
             <div class="title" id="reader-title">文档标题</div>
             <div class="meta" id="reader-meta"></div>
+            <!-- 阅读模式内的视图模式 toggle:始终可见,保证用户能切回编辑 -->
+            <div class="view-toggle" id="reader-view-toggle" role="tablist" aria-label="视图模式">
+              <button class="view-toggle-btn" id="reader-view-btn-edit" role="tab" aria-selected="false" data-tip="编辑" aria-label="编辑视图">编辑</button>
+              <button class="view-toggle-btn active" id="reader-view-btn-read" role="tab" aria-selected="true" data-tip="阅读" aria-label="阅读视图">阅读</button>
+            </div>
           </div>
 
           <article class="reader-content" id="reader-content"></article>
@@ -2912,6 +2917,17 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
         // 绑定按钮
         this.el.querySelector('#reader-back').addEventListener('click', () => this.close());
+
+        // 视图模式 toggle(在 reader 内)— 走 ViewManager 保持两边状态同步
+        const rEditBtn = this.el.querySelector('#reader-view-btn-edit');
+        const rReadBtn = this.el.querySelector('#reader-view-btn-read');
+        if (rEditBtn) rEditBtn.addEventListener('click', () => {
+          if (typeof ViewManager !== 'undefined') ViewManager.set('edit');
+          else this.close();
+        });
+        if (rReadBtn) rReadBtn.addEventListener('click', () => {
+          if (typeof ViewManager !== 'undefined') ViewManager.set('reader');
+        });
 
         // 设置按钮
         this.el.querySelectorAll('.reader-control-group .opt').forEach(btn => {
@@ -3038,19 +3054,17 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       },
 
       _onTap(e) {
-        // 点击内容区切换工具栏显示
+        // 工具栏始终保持可见(里面有视图模式 toggle),不再被点击切换
+        // 只切换底部控制面板和统计的显隐
         if (e.target.closest('.reader-controls') || e.target.closest('.reader-toolbar')) return;
-        const toolbar = document.getElementById('reader-toolbar');
         const controls = document.getElementById('reader-controls');
         const stats = document.getElementById('reader-stats');
-        if (toolbar && controls) {
-          const isShown = toolbar.classList.contains('show');
+        if (controls) {
+          const isShown = controls.classList.contains('show');
           if (isShown) {
-            toolbar.classList.remove('show');
             controls.classList.remove('show');
             stats && stats.classList.remove('show');
           } else {
-            toolbar.classList.add('show');
             controls.classList.add('show');
             stats && stats.classList.add('show');
             this._scheduleHideControls();
@@ -3062,14 +3076,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         clearTimeout(this.controlsHideTimer);
         this.controlsHideTimer = setTimeout(() => {
           if (!this.isOpen) return;
-          const toolbar = document.getElementById('reader-toolbar');
+          // 工具栏不再自动隐藏(里面有视图模式 toggle,必须常驻)
           const controls = document.getElementById('reader-controls');
           const stats = document.getElementById('reader-stats');
-          // 顶部工具栏滚动到底部时收起，底部控制 3 秒后收起
-          const scrollPct = (window.scrollY || 0) / Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-          if (scrollPct < 0.95) {
-            toolbar && toolbar.classList.remove('show');
-          }
           setTimeout(() => {
             controls && controls.classList.remove('show');
             stats && stats.classList.remove('show');
@@ -3102,14 +3111,19 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       },
 
       _syncToggle() {
-        const editBtn = $('view-btn-edit');
-        const readBtn = $('view-btn-read');
-        if (!editBtn || !readBtn) return;
+        // 同步两套 toggle(主 navbar + reader 内),保证状态一致
         const isEdit = this.current === 'edit';
-        editBtn.classList.toggle('active', isEdit);
-        readBtn.classList.toggle('active', !isEdit);
-        editBtn.setAttribute('aria-selected', String(isEdit));
-        readBtn.setAttribute('aria-selected', String(!isEdit));
+        const pairs = [
+          [$('view-btn-edit'), $('view-btn-read')],
+          [$('reader-view-btn-edit'), $('reader-view-btn-read')],
+        ];
+        pairs.forEach(([editBtn, readBtn]) => {
+          if (!editBtn || !readBtn) return;
+          editBtn.classList.toggle('active', isEdit);
+          readBtn.classList.toggle('active', !isEdit);
+          editBtn.setAttribute('aria-selected', String(isEdit));
+          readBtn.setAttribute('aria-selected', String(!isEdit));
+        });
       },
 
       set(mode, save = true) {
