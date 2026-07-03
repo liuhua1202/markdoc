@@ -119,6 +119,42 @@ const dom = new JSDOM(html, {
   check('pill X 位置始终不变(二次确认)', Math.abs(rectAfter.x - xBefore) < 1);
   check('pill Y 位置始终不变(二次确认)', Math.abs(rectAfter.y - yBefore) < 1);
 
+  console.log('\n--- 阅读模式下 outline / drawer / docs 不能被 reader 盖住 ---');
+  // 关键:这些侧栏的 z-index 必须大于 #reader (1500)
+  if (readBtn) readBtn.click();   // 再次进入 reader
+  await new Promise(r => setTimeout(r, 200));
+
+  // 打开 outline(动态注入样式,需要先 open 一次才会注入到 <head>)
+  dom.window.eval('Outline.open()');
+  await new Promise(r => setTimeout(r, 200));
+  const outlineEl = doc.querySelector('.outline-panel');
+  if (outlineEl) {
+    const op = dom.window.getComputedStyle(outlineEl).zIndex;
+    const rp = dom.window.getComputedStyle(doc.getElementById('reader')).zIndex;
+    check('outline-panel z-index 大于 reader', parseInt(op, 10) > parseInt(rp, 10));
+  } else {
+    check('outline-panel 创建成功', false);
+  }
+  // 关闭 outline
+  dom.window.eval('Outline.close()');
+  await new Promise(r => setTimeout(r, 100));
+
+  // 检查 drawer
+  const drawerEl = doc.getElementById('drawer');
+  if (drawerEl) {
+    const dz = parseInt(dom.window.getComputedStyle(drawerEl).zIndex, 10);
+    const rz = parseInt(dom.window.getComputedStyle(doc.getElementById('reader')).zIndex, 10);
+    check('drawer z-index 大于 reader', dz > rz);
+  }
+
+  // 检查 docs-panel
+  const docsEl = doc.getElementById('docs-panel');
+  if (docsEl) {
+    const dpz = parseInt(dom.window.getComputedStyle(docsEl).zIndex, 10);
+    const rz = parseInt(dom.window.getComputedStyle(doc.getElementById('reader')).zIndex, 10);
+    check('docs-panel z-index 大于 reader', dpz > rz);
+  }
+
   console.log('\n--- 抽屉仍正常(左滑) ---');
   const drawer = doc.getElementById('drawer');
   if (drawer) {

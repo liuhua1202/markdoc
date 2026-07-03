@@ -306,7 +306,7 @@
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      z-index: 1000;
+      z-index: 1600;   /* 高于 reader(1500),阅读模式下也能打开抽屉 */
       opacity: 0;
       visibility: hidden;
       pointer-events: none;  /* Android WebView 防御:隐藏时绝不吃点击,避免抽屉一开即关 */
@@ -329,7 +329,7 @@
       background: var(--bg-elev);
       border-radius: 0 16px 16px 0;
       box-shadow: var(--shadow-lg);
-      z-index: 1001;
+      z-index: 1601;   /* 高于 reader,阅读模式下也能打开抽屉 */
       transform: translateX(-100%);
       transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
       padding: 16px 16px 16px calc(env(safe-area-inset-left) + 16px);
@@ -837,7 +837,7 @@
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      z-index: 900;
+      z-index: 1600;   /* 高于 reader(1500),阅读模式下也能切文档 */
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.25s ease, visibility 0.25s ease;
@@ -854,7 +854,7 @@
       background: var(--bg);
       border-radius: 24px 24px 0 0;
       box-shadow: var(--shadow-lg);
-      z-index: 901;
+      z-index: 1601;   /* 高于 reader,阅读模式下也能切文档 */
       max-height: 85vh;
       display: flex;
       flex-direction: column;
@@ -4193,7 +4193,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             inset: 0;
             background: rgba(0,0,0,0.4);
             backdrop-filter: blur(4px);
-            z-index: 950;
+            z-index: 1600;   /* 高于 reader(1500),阅读模式下也能打开大纲 */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s ease, visibility 0.2s ease;
@@ -4211,7 +4211,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             max-width: 360px;
             background: var(--bg);
             box-shadow: var(--shadow-lg);
-            z-index: 951;
+            z-index: 1601;   /* 高于 reader(1500)+ reader-progress(1501) */
             transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
             display: flex;
@@ -4450,7 +4450,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             background: var(--bg-elev);
             border-radius: 12px;
             box-shadow: var(--shadow-lg);
-            z-index: 1200;
+            z-index: 1700;   /* 高于所有侧栏,阅读模式下也能查找 */
             padding: 8px;
             display: none;
             min-width: 280px;
