@@ -285,6 +285,16 @@
       flex-shrink: 0;
     }
 
+    /* 阅读模式下隐藏编辑器专属的 navbar 按钮 — 保留 brand 和 view-toggle
+       这样 navbar 在两种模式下都常驻可见,view-toggle 位置永远不变 */
+    #navbar[data-mode="reader"] .nav-btn:not(.view-toggle-btn) {
+      display: none;
+    }
+    /* 同样隐藏抽屉(更多菜单)在 read 模式下的入口(没有意义) */
+    #navbar[data-mode="reader"] #more-btn {
+      display: none;
+    }
+
     /* ============================================================
        抽屉菜单（导出等更多操作）— 从左侧滑出
        ============================================================ */
@@ -1325,10 +1335,15 @@
 
     /* ============================================================
        阅读模式（沉浸式）
+       — 不再 fullscreen 覆盖 navbar,这样 navbar 里的视图切换按钮
+         位置始终不变(用户能在阅读模式下也能看到/点击)
        ============================================================ */
     #reader {
       position: fixed;
-      inset: 0;
+      top: var(--navbar-h, 56px);   /* 紧贴 navbar 下方,navbar 始终可见 */
+      left: 0;
+      right: 0;
+      bottom: 0;
       z-index: 1500;
       display: none;
       background: var(--reader-bg, #FDFCF7);
@@ -1352,10 +1367,10 @@
       to { opacity: 0; transform: translateY(20px); }
     }
 
-    /* 进度条 */
+    /* 进度条 — 紧贴 navbar 下方(reader 顶部),不再压在屏幕最顶 */
     .reader-progress {
       position: fixed;
-      top: 0;
+      top: var(--navbar-h, 56px);
       left: 0;
       right: 0;
       height: 2px;
@@ -1432,16 +1447,26 @@
       height: 18px;
     }
 
-    /* 阅读内容区 */
+    /* 阅读内容区(reader 自身不再有 toolbar,直接从 navbar 下方开始) */
     .reader-content {
       max-width: var(--reader-max-width, 680px);
       margin: 0 auto;
-      padding: calc(env(safe-area-inset-top) + 72px) 24px calc(env(safe-area-inset-bottom) + 120px);
+      padding: calc(env(safe-area-inset-top) + 16px) 24px calc(env(safe-area-inset-bottom) + 120px);
       font-size: var(--reader-font-size, 18px);
       line-height: var(--reader-line-height, 1.75);
       font-family: var(--reader-font-family, -apple-system, sans-serif);
       color: var(--reader-fg, #1A1829);
       letter-spacing: 0.01em;
+    }
+
+    /* 阅读模式的标题(由 _render 注入,跟正文 H1 区分) */
+    .reader-content > .reader-title {
+      font-size: 1.8em;
+      font-weight: 800;
+      line-height: 1.3;
+      margin: 0 0 0.8em;
+      letter-spacing: -0.02em;
+      color: var(--reader-fg, #1A1829);
     }
 
     .reader-content h1 {
@@ -1936,19 +1961,22 @@
   <!-- 主应用 -->
   <div id="app">
 
-    <!-- 顶部导航栏 -->
-    <header id="navbar" class="navbar">
+    <!-- 顶部导航栏(data-mode 由 ViewManager 控制:edit / reader) -->
+    <header id="navbar" class="navbar" data-mode="edit">
       <div class="nav-brand">
         <img src="logo.svg" class="nav-logo" alt="logo" />
         <div class="nav-title">马克档</div>
       </div>
 
       <div class="nav-actions">
-        <!-- 视图模式 toggle:编辑 / 阅读(默认编辑;阅读模式也可通过双击 R 快捷键进入) -->
-        <div class="view-toggle" id="view-toggle" role="tablist" aria-label="视图模式">
-          <button class="view-toggle-btn active" id="view-btn-edit" role="tab" aria-selected="true" data-tip="编辑" aria-label="编辑视图">编辑</button>
-          <button class="view-toggle-btn" id="view-btn-read" role="tab" aria-selected="false" data-tip="阅读" aria-label="阅读视图">阅读</button>
-        </div>
+        <!-- 视图模式 toggle:单个图标按钮,位置始终不变(编辑/阅读两种状态切换图标) -->
+        <button class="nav-btn view-toggle-btn" id="view-toggle-btn" data-tip="阅读" aria-label="切换到阅读视图" data-mode-target="reader">
+          <svg id="view-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- 默认:书(open book)= 提示"点我进入阅读" -->
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </button>
 
         <!-- 主题切换 -->
         <button id="theme-toggle" class="nav-btn" data-tip="主题" aria-label="主题切换">
@@ -2867,19 +2895,6 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         this.el.innerHTML = `
           <div class="reader-progress"><div class="reader-progress-bar" id="reader-progress-bar"></div></div>
 
-          <div class="reader-toolbar show" id="reader-toolbar">
-            <button class="reader-btn" id="reader-back" title="退出阅读 (Esc)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            </button>
-            <div class="title" id="reader-title">文档标题</div>
-            <div class="meta" id="reader-meta"></div>
-            <!-- 阅读模式内的视图模式 toggle:始终可见,保证用户能切回编辑 -->
-            <div class="view-toggle" id="reader-view-toggle" role="tablist" aria-label="视图模式">
-              <button class="view-toggle-btn" id="reader-view-btn-edit" role="tab" aria-selected="false" data-tip="编辑" aria-label="编辑视图">编辑</button>
-              <button class="view-toggle-btn active" id="reader-view-btn-read" role="tab" aria-selected="true" data-tip="阅读" aria-label="阅读视图">阅读</button>
-            </div>
-          </div>
-
           <article class="reader-content" id="reader-content"></article>
 
           <div class="reader-stats" id="reader-stats"></div>
@@ -2915,19 +2930,8 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         `;
         document.body.appendChild(this.el);
 
-        // 绑定按钮
-        this.el.querySelector('#reader-back').addEventListener('click', () => this.close());
-
-        // 视图模式 toggle(在 reader 内)— 走 ViewManager 保持两边状态同步
-        const rEditBtn = this.el.querySelector('#reader-view-btn-edit');
-        const rReadBtn = this.el.querySelector('#reader-view-btn-read');
-        if (rEditBtn) rEditBtn.addEventListener('click', () => {
-          if (typeof ViewManager !== 'undefined') ViewManager.set('edit');
-          else this.close();
-        });
-        if (rReadBtn) rReadBtn.addEventListener('click', () => {
-          if (typeof ViewManager !== 'undefined') ViewManager.set('reader');
-        });
+        // 注意:不再绑定 reader-back / reader-view-toggle — 切回编辑统一走
+        // navbar 里的 view-toggle-btn(图标按钮,位置始终不变)
 
         // 设置按钮
         this.el.querySelectorAll('.reader-control-group .opt').forEach(btn => {
@@ -2952,35 +2956,36 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         const editor = document.getElementById('editor');
         const src = editor ? editor.value : '';
         const preview = document.getElementById('preview-content');
-        const title = document.getElementById('reader-title');
+
+        // 标题:取文档标题或首行
+        const active = (typeof DocManager !== 'undefined') ? DocManager.active() : null;
+        const docTitle = active?.title || src.split('\n').find(l => l.trim())?.replace(/^#+\s*/, '').slice(0, 60) || '无标题';
 
         // 用现有的预览 DOM 拷贝过来（保留已渲染的高亮/图表）
         const content = document.getElementById('reader-content');
+        let body = '';
         if (preview) {
-          content.innerHTML = preview.innerHTML;
+          body = preview.innerHTML;
         } else if (typeof marked !== 'undefined') {
-          content.innerHTML = marked.parse(src);
+          body = marked.parse(src);
         }
-
-        // 标题：取文档标题或首行
-        const active = (typeof DocManager !== 'undefined') ? DocManager.active() : null;
-        const docTitle = active?.title || src.split('\n').find(l => l.trim())?.replace(/^#+\s*/, '').slice(0, 60) || '无标题';
-        title.textContent = docTitle;
+        // 标题放在内容最前(用 H1 样式,跟正文区分)
+        const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const titleHtml = `<h1 class="reader-title">${esc(docTitle)}</h1>`;
+        content.innerHTML = titleHtml + body;
 
         // 重新应用代码高亮 / Mermaid / KaTeX（如果已加载）
         this._postProcess();
 
         // 元数据：字数 + 阅读时长
-        const meta = document.getElementById('reader-meta');
         const cn = (src.match(/[\u4e00-\u9fa5]/g) || []).length;
         const en = (src.replace(/[\u4e00-\u9fa5]/g, ' ').match(/[a-zA-Z]+/g) || []).length;
         const words = cn + en;
         const minutes = Math.max(1, Math.round(cn / 300 + en / 200));
-        meta.textContent = `${words} 字 · ${minutes} 分钟`;
 
         // 底部统计
         const stats = document.getElementById('reader-stats');
-        stats.textContent = `已读 0% · 约 ${minutes} 分钟`;
+        stats.textContent = `已读 0% · ${words} 字 · 约 ${minutes} 分钟`;
       },
 
       _postProcess() {
@@ -3054,9 +3059,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       },
 
       _onTap(e) {
-        // 工具栏始终保持可见(里面有视图模式 toggle),不再被点击切换
-        // 只切换底部控制面板和统计的显隐
-        if (e.target.closest('.reader-controls') || e.target.closest('.reader-toolbar')) return;
+        // 点击内容区切换底部控制面板和统计的显隐
+        // (顶部切换按钮在 navbar 里,tap 内容不再影响 toolbar — toolbar 已合并到 navbar)
+        if (e.target.closest('.reader-controls')) return;
         const controls = document.getElementById('reader-controls');
         const stats = document.getElementById('reader-stats');
         if (controls) {
@@ -3096,6 +3101,14 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
     const ViewManager = {
       current: 'edit',
 
+      // 图标 SVG(两套:edit=铅笔 / reader=书)
+      _icons: {
+        // open book(点击切到阅读)— 编辑模式下显示
+        reader: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+        // pencil(点击切到编辑)— 阅读模式下显示
+        edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+      },
+
       init() {
         const saved = localStorage.getItem(STORAGE_KEYS.viewMode);
         const mode = (saved === 'edit' || saved === 'reader') ? saved : 'edit';
@@ -3104,30 +3117,33 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       },
 
       _bindToggle() {
-        const editBtn = $('view-btn-edit');
-        const readBtn = $('view-btn-read');
-        if (editBtn) editBtn.addEventListener('click', () => this.set('edit'));
-        if (readBtn) readBtn.addEventListener('click', () => this.set('reader'));
+        // 单个图标按钮:点击在 edit / reader 之间切换
+        const btn = $('view-toggle-btn');
+        if (btn) btn.addEventListener('click', () => {
+          this.set(this.current === 'reader' ? 'edit' : 'reader');
+        });
       },
 
       _syncToggle() {
-        // 同步两套 toggle(主 navbar + reader 内),保证状态一致
+        // 当前在 edit 模式 → 显示"书"图标(点它进入阅读)
+        // 当前在 reader 模式 → 显示"铅笔"图标(点它返回编辑)
+        const btn = $('view-toggle-btn');
+        if (!btn) return;
+        const icon = $('view-toggle-icon');
         const isEdit = this.current === 'edit';
-        const pairs = [
-          [$('view-btn-edit'), $('view-btn-read')],
-          [$('reader-view-btn-edit'), $('reader-view-btn-read')],
-        ];
-        pairs.forEach(([editBtn, readBtn]) => {
-          if (!editBtn || !readBtn) return;
-          editBtn.classList.toggle('active', isEdit);
-          readBtn.classList.toggle('active', !isEdit);
-          editBtn.setAttribute('aria-selected', String(isEdit));
-          readBtn.setAttribute('aria-selected', String(!isEdit));
-        });
+        const target = isEdit ? 'reader' : 'edit';
+        if (icon && this._icons[target]) {
+          icon.innerHTML = this._icons[target];
+        }
+        btn.setAttribute('data-tip', target === 'reader' ? '阅读' : '编辑');
+        btn.setAttribute('aria-label', target === 'reader' ? '切换到阅读视图' : '切换到编辑视图');
+        btn.setAttribute('data-mode-target', target);
+        btn.classList.toggle('active', !isEdit);  // 视觉高亮(在 reader 时)
       },
 
       set(mode, save = true) {
         const normalized = (mode === 'reader') ? 'reader' : 'edit';
+        const prev = this.current;
         this.current = normalized;
 
         // 退出阅读模式(如果开着)
@@ -3144,7 +3160,11 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           if (typeof Reader !== 'undefined') Reader.open();
         }
 
-        // 同步 toggle 按钮高亮
+        // 同步 navbar 模式属性(让 CSS 决定哪些 nav 按钮隐藏)
+        const navbar = document.getElementById('navbar');
+        if (navbar) navbar.setAttribute('data-mode', normalized);
+
+        // 同步 toggle 按钮(图标 + 提示)
         this._syncToggle();
 
         // 仅持久化合法的模式(edit / reader)
@@ -5796,6 +5816,16 @@ MIT
     }
 
     // ----------------------------------------------------------
+    // 10.5. 同步 navbar 实际高度到 CSS 变量(让 #reader 从 navbar 下方开始)
+    // ----------------------------------------------------------
+    function syncNavbarHeight() {
+      const navbar = document.getElementById('navbar');
+      if (!navbar) return;
+      const h = navbar.getBoundingClientRect().height;
+      document.documentElement.style.setProperty('--navbar-h', h + 'px');
+    }
+
+    // ----------------------------------------------------------
     // 11. 启动
     // ----------------------------------------------------------
     function boot() {
@@ -5869,6 +5899,16 @@ MIT
             }
           }
         } catch (e) { console.warn('主题监听注册失败', e); }
+
+        // 同步 navbar 高度(让 reader 从 navbar 下方开始,保证切换按钮位置不变)
+        try {
+          syncNavbarHeight();
+          // 视口变化时重测(横竖屏切换 / 软键盘)
+          window.addEventListener('resize', syncNavbarHeight);
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', syncNavbarHeight);
+          }
+        } catch (e) { console.warn('navbar 高度同步失败', e); }
 
         // 按钮事件（每个独立 try/catch）
         safe('主题按钮', () => $('theme-toggle').addEventListener('click', () => ThemeManager.cycle()));
