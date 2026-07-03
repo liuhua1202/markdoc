@@ -188,6 +188,28 @@ const dom = new JSDOM(html, {
   dom.window.eval('Outline.close()');
   await new Promise(r => setTimeout(r, 100));
 
+  console.log('\n--- data-tip 工具提示 z-index 高于所有浮层 ---');
+  // 关键:navbar 按钮长按弹出的提示要盖在所有浮层之上
+  // 模拟 :active 状态以触发 ::after,然后检查 z-index
+  const themeBtn2 = doc.getElementById('theme-toggle');
+  if (themeBtn2 && themeBtn2.hasAttribute('data-tip')) {
+    check('theme-toggle 按钮带 data-tip', true);
+    // 直接读 ::after 的 z-index(用 getComputedStyle 在 :active 伪类下)
+    // jsdom 不支持 :active,但能从 CSS 源文本验证
+    const sheets = doc.querySelectorAll('style');
+    let cssText = '';
+    sheets.forEach(s => cssText += s.textContent + '\n');
+    const tipMatch = cssText.match(/\[data-tip\]:active::after\s*\{[^}]*z-index:\s*(\d+)/);
+    if (tipMatch) {
+      const tipZ = parseInt(tipMatch[1], 10);
+      check('data-tip ::after z-index 至少 2000(高于所有浮层)', tipZ >= 2000);
+    } else {
+      check('data-tip ::after 规则包含 z-index', false);
+    }
+  } else {
+    check('theme-toggle 按钮带 data-tip', false);
+  }
+
   console.log('\n--- 抽屉仍正常(左滑) ---');
   const drawer = doc.getElementById('drawer');
   if (drawer) {

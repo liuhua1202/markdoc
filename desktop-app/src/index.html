@@ -1761,6 +1761,8 @@
 
     /* ============================================================
        工具提示（主题/视图按钮长按）
+       — 之前 z-index: 100,被 reader(1500)/drawer(1601)/outline(1601)/
+         find-panel(1700) 全部盖住,长按看不到提示
        ============================================================ */
     [data-tip] { position: relative; }
     [data-tip]:active::after {
@@ -1776,7 +1778,7 @@
       font-size: 11px;
       white-space: nowrap;
       pointer-events: none;
-      z-index: 100;
+      z-index: 2000;   /* 高于所有浮层:reader/drawer/outline/docs/find */
     }
 
     /* ============================================================
