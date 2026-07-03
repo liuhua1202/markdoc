@@ -245,6 +245,40 @@
       background: var(--brand-soft);
     }
 
+    /* 视图模式 toggle:编辑 / 阅读(类似 iOS segmented control) */
+    .view-toggle {
+      display: inline-flex;
+      background: var(--bg-soft);
+      border-radius: 10px;
+      padding: 2px;
+      gap: 2px;
+      margin: 0 4px;
+    }
+
+    .view-toggle-btn {
+      min-height: 36px;
+      padding: 0 12px;
+      border: none;
+      background: transparent;
+      color: var(--fg-muted);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .view-toggle-btn:hover {
+      color: var(--fg);
+    }
+
+    .view-toggle-btn.active {
+      background: var(--bg-elev);
+      color: var(--brand);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
     .nav-btn svg {
       width: 18px;
       height: 18px;
@@ -1724,6 +1758,7 @@
     @media (max-width: 360px) {
       .nav-title { font-size: 15px; }
       .nav-btn { padding: 0 8px; font-size: 12px; }
+      .view-toggle-btn { padding: 0 8px; font-size: 11px; }
       .preview-content { font-size: 15px; }
     }
 
@@ -1909,7 +1944,11 @@
       </div>
 
       <div class="nav-actions">
-        <!-- 视图模式:默认编辑器全屏;阅读模式通过双击 R 快捷键进入 -->
+        <!-- 视图模式 toggle:编辑 / 阅读(默认编辑;阅读模式也可通过双击 R 快捷键进入) -->
+        <div class="view-toggle" id="view-toggle" role="tablist" aria-label="视图模式">
+          <button class="view-toggle-btn active" id="view-btn-edit" role="tab" aria-selected="true" data-tip="编辑" aria-label="编辑视图">编辑</button>
+          <button class="view-toggle-btn" id="view-btn-read" role="tab" aria-selected="false" data-tip="阅读" aria-label="阅读视图">阅读</button>
+        </div>
 
         <!-- 主题切换 -->
         <button id="theme-toggle" class="nav-btn" data-tip="主题" aria-label="主题切换">
@@ -2687,7 +2726,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
           if (e.key === 'Escape') {
             e.preventDefault();
-            this.close();
+            // 走 ViewManager 保持 toggle 按钮高亮和 viewMode 状态一致
+            if (typeof ViewManager !== 'undefined') {
+              ViewManager.set('edit');
+            } else {
+              this.close();
+            }
             return;
           }
           if (e.key === 'ArrowDown' || e.key === 'j') {
@@ -3047,6 +3091,25 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         const saved = localStorage.getItem(STORAGE_KEYS.viewMode);
         const mode = (saved === 'edit' || saved === 'reader') ? saved : 'edit';
         this.set(mode, false);
+        this._bindToggle();
+      },
+
+      _bindToggle() {
+        const editBtn = $('view-btn-edit');
+        const readBtn = $('view-btn-read');
+        if (editBtn) editBtn.addEventListener('click', () => this.set('edit'));
+        if (readBtn) readBtn.addEventListener('click', () => this.set('reader'));
+      },
+
+      _syncToggle() {
+        const editBtn = $('view-btn-edit');
+        const readBtn = $('view-btn-read');
+        if (!editBtn || !readBtn) return;
+        const isEdit = this.current === 'edit';
+        editBtn.classList.toggle('active', isEdit);
+        readBtn.classList.toggle('active', !isEdit);
+        editBtn.setAttribute('aria-selected', String(isEdit));
+        readBtn.setAttribute('aria-selected', String(!isEdit));
       },
 
       set(mode, save = true) {
@@ -3066,6 +3129,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           // 阅读视图
           if (typeof Reader !== 'undefined') Reader.open();
         }
+
+        // 同步 toggle 按钮高亮
+        this._syncToggle();
 
         // 仅持久化合法的模式(edit / reader)
         if (save && (normalized === 'edit' || normalized === 'reader')) {
@@ -4109,17 +4175,19 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           .outline-panel {
             position: fixed;
             top: 0;
-            right: 0;
+            left: 0;
             bottom: 0;
             width: 80%;
             max-width: 360px;
             background: var(--bg);
             box-shadow: var(--shadow-lg);
             z-index: 951;
-            transform: translateX(100%);
+            transform: translateX(-100%);
             transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
             display: flex;
             flex-direction: column;
+            border-radius: 0 16px 16px 0;
+            padding-left: env(safe-area-inset-left);
           }
           .outline-panel.show { transform: translateX(0); }
           .outline-handle {
@@ -5799,8 +5867,9 @@ MIT
               const active = document.activeElement;
               if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
               const now = Date.now();
-              if (now - lastR < 400 && typeof Reader !== 'undefined') {
-                Reader.toggle();
+              if (now - lastR < 400 && typeof ViewManager !== 'undefined') {
+                // 走 ViewManager 而不是 Reader.toggle,这样 toggle 按钮高亮和 viewMode 状态都同步
+                ViewManager.set(ViewManager.current === 'reader' ? 'edit' : 'reader');
                 lastR = 0;
               } else {
                 lastR = now;
