@@ -805,9 +805,10 @@
        ============================================================ */
     .toast {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom) + 80px);
+      /* 顶部弹出:navbar 下方 (--navbar-h 由 JS 同步,含 safe-area-inset-top) */
+      top: calc(var(--navbar-h, 56px) + 8px);
       left: 50%;
-      transform: translateX(-50%) translateY(20px);
+      transform: translateX(-50%) translateY(-20px);
       background: var(--fg);
       color: var(--bg);
       padding: 12px 20px;
@@ -1604,7 +1605,8 @@
     /* 底部浮动控制面板 */
     .reader-controls {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom) + 16px);
+      /* 16 → 36:避开屏幕圆角裁剪,稍微往中间收一些 */
+      bottom: calc(env(safe-area-inset-bottom) + 36px);
       left: 50%;
       transform: translateX(-50%) translateY(100%);
       background: var(--reader-toolbar-bg, rgba(253, 252, 247, 0.95));
@@ -1779,7 +1781,9 @@
     [data-tip]:active::after {
       content: attr(data-tip);
       position: absolute;
-      bottom: -28px;
+      /* 工具提示浮在按钮紧邻下方(navbar 底部以下、workspace 顶部之上)。
+         这样视觉上属于"上方区域",且不会被 navbar 上方的状态栏裁切。 */
+      top: calc(100% + 6px);
       left: 50%;
       transform: translateX(-50%);
       background: var(--fg);
@@ -2054,11 +2058,13 @@
       <div class="doc-list" id="doc-list"></div>
       <div class="docs-footer">
         <button class="btn-secondary" id="btn-doc-export">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <!-- 导出:箭头朝上离开(数据从 app 流出),视觉 = upload -->
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           导出
         </button>
         <button class="btn-secondary" id="btn-doc-import">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <!-- 导入:箭头朝下进入(数据从外部进 app),视觉 = download -->
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           导入
         </button>
         <button class="btn-secondary" id="btn-doc-template" title="从模板新建">
@@ -2699,7 +2705,25 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         }
         this.updateIcon();
         this.updateCodeTheme();
+        // 同步 reader 主题(如果用户没在 reader 控件里显式选过主题,跟随 app 切换)
+        this.syncReaderTheme();
         if (save) localStorage.setItem(STORAGE_KEYS.theme, mode);
+      },
+
+      // 把 app 整体主题映射到 reader 内部主题:
+      //   light → paper(白)
+      //   dark  → dark (深)
+      //   auto 取决于系统,但 data-theme 已被上面 set 成 'light' 或 'dark'
+      // 仅在 userExplicitTheme === false 时才同步,避免覆盖用户手动选过的主题
+      syncReaderTheme() {
+        if (typeof Reader === 'undefined' || !Reader.settings) return;
+        if (Reader.settings.userExplicitTheme) return;
+        const appTheme = document.documentElement.getAttribute('data-theme');
+        const newReaderTheme = appTheme === 'dark' ? 'dark' : 'paper';
+        if (Reader.settings.theme !== newReaderTheme) {
+          Reader.settings.theme = newReaderTheme;
+          if (Reader.isOpen) Reader._applySettings();
+        }
       },
 
       updateCodeTheme() {
@@ -2753,6 +2777,8 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         font: 'sans',            // sans/serif/mono
         size: 'medium',          // small/medium/large/xlarge
         lineHeight: 'comfortable', // compact/comfortable/relaxed
+        userExplicitTheme: false,  // 用户是否在 reader 控件里显式选过主题
+                                   // false 时跟随 app 整体主题,选过之后锁定
       },
 
       settings: null,
@@ -2763,7 +2789,16 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (raw) {
           try { this.settings = JSON.parse(raw); } catch (_) {}
         }
-        if (!this.settings) this.settings = { ...this.defaults };
+        if (!this.settings) {
+          // 首次进入 / 没有用户偏好 — 根据 app 整体主题决定 reader 主题
+          // 这样切到 dark 模式进 reader 就直接是深色,不用再手动切
+          //   app light → reader paper(白)
+          //   app dark  → reader dark (深)
+          //   app auto  → reader paper(保守默认,跟随系统需用户显式切)
+          const appTheme = document.documentElement.getAttribute('data-theme');
+          const readerTheme = appTheme === 'dark' ? 'dark' : 'paper';
+          this.settings = { ...this.defaults, theme: readerTheme };
+        }
 
         // 绑定事件处理函数（保留 this 上下文）
         // 必须在 init() 里绑定一次，否则 addEventListener 拿到的引用无法 remove
@@ -2819,7 +2854,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (this.isOpen) return;
 
         // 兜底：若 init() 尚未执行（boot 阶段就被调用），保证 settings 有默认值
-        if (!this.settings) this.settings = { ...this.defaults };
+        // 同时根据 app 整体主题决定 reader theme,和 init() 行为一致
+        if (!this.settings) {
+          const appTheme = document.documentElement.getAttribute('data-theme');
+          const readerTheme = appTheme === 'dark' ? 'dark' : 'paper';
+          this.settings = { ...this.defaults, theme: readerTheme };
+        }
 
         // 确保事件处理函数已绑定
         if (!this._onScrollBound) this._onScrollBound = this._onScroll.bind(this);
@@ -3048,6 +3088,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       setSetting(type, value) {
         const key = type === 'lineHeight' ? 'lineHeight' : type;
         this.settings[key] = value;
+        if (type === 'theme') this.settings.userExplicitTheme = true;  // 显式选了主题,锁定
         localStorage.setItem('markdoc.reader.v1', JSON.stringify(this.settings));
         this._applySettings();
       },
@@ -3607,6 +3648,11 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           showToast('已切换文档');
           // 多标签同步
           if (typeof MultiTabSync !== 'undefined') MultiTabSync.announceSwitch(docId);
+          // 阅读视图下,Reader 内容是从 _syncToEditor 之前的 preview.innerHTML 拷贝的旧快照。
+          // 需要立即重渲染 Reader,否则用户看到的是旧文档,要切换视图才会刷新。
+          if (typeof Reader !== 'undefined' && Reader.isOpen) {
+            try { Reader._render(); } catch (e) { console.warn('[DocManager.switchTo] Reader._render 失败:', e); }
+          }
         }
       },
 
@@ -4372,6 +4418,10 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (btnNew) btnNew.addEventListener('click', () => {
           DocManager.create('未命名文档', '');
           closeDocsPanel();
+          // 新建后自动切回编辑模式,便于直接输入内容
+          if (typeof ViewManager !== 'undefined' && ViewManager.current !== 'edit') {
+            ViewManager.set('edit');
+          }
         });
 
         const btnTemplate = $('btn-doc-template');
