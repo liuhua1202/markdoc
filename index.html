@@ -1106,6 +1106,187 @@
       font-weight: 600;
     }
 
+    /* 导出 picker（多选 + 格式切换） */
+    .export-picker {
+      position: fixed;
+      inset: 0;
+      z-index: 1700;     /* 高于 docs-panel(1601) */
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .export-picker .ep-mask {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .export-picker.show .ep-mask { opacity: 1; }
+
+    .export-picker .ep-body {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      background: var(--bg);
+      border-radius: 20px 20px 0 0;
+      padding: 8px 12px calc(env(safe-area-inset-bottom) + 12px);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .export-picker.show .ep-body { transform: translateY(0); }
+
+    .export-picker .ep-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border-strong);
+      border-radius: 2px;
+      margin: 6px auto 8px;
+    }
+    .export-picker .ep-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg);
+      padding: 4px 0 10px;
+    }
+
+    .export-picker .ep-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px 10px;
+      flex-wrap: wrap;
+    }
+    .export-picker .ep-tool {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg-soft);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .export-picker .ep-tool:active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+    .export-picker .ep-sep {
+      flex: 1;
+    }
+    .export-picker .ep-format {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg-soft);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .export-picker .ep-format.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .export-picker .ep-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0 8px;
+      max-height: 50vh;
+    }
+    .export-picker .ep-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      margin: 2px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .export-picker .ep-item:hover,
+    .export-picker .ep-item:active {
+      background: var(--bg-soft);
+    }
+    .export-picker .ep-item.checked {
+      background: var(--brand-soft);
+    }
+    .export-picker .ep-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--brand);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .export-picker .ep-item-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .export-picker .ep-item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .export-picker .ep-item.checked .ep-item-title {
+      color: var(--brand);
+    }
+    .export-picker .ep-item-sub {
+      font-size: 11px;
+      color: var(--fg-muted);
+      margin-top: 2px;
+    }
+
+    .export-picker .ep-footer {
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .export-picker .ep-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .export-picker .ep-btn.ep-cancel {
+      flex: 0 0 100px;
+      background: var(--bg-elev);
+      color: var(--fg);
+    }
+    .export-picker .ep-btn.ep-confirm {
+      background: var(--brand);
+      color: #fff;
+    }
+    .export-picker .ep-btn.ep-confirm:active {
+      transform: scale(0.98);
+    }
+    .export-picker .ep-count {
+      display: inline-block;
+      min-width: 18px;
+      padding: 0 4px;
+      margin-left: 2px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
     /* ============================================================
        AI 助手面板
        ============================================================ */
@@ -3950,6 +4131,164 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         }
       },
 
+      // 单 .md 文件导入（直接新建一个文档）
+      importMd(text, filename) {
+        const title = (filename || '导入文档').replace(/\.[^.]+$/, '');
+        const fresh = this._makeDoc(title || '导入文档', text || '');
+        this.docs.push(fresh);
+        this._persist();
+        this.renderList();
+        return 1;
+      },
+
+      // 导出 picker：让用户挑具体文档，而不是无脑全量
+      showExportPicker() {
+        if (!this.docs.length) {
+          showToast('还没有文档可导出');
+          return;
+        }
+
+        const sheet = document.createElement('div');
+        sheet.className = 'export-picker';
+        sheet.innerHTML = `
+          <div class="ep-mask"></div>
+          <div class="ep-body" role="dialog" aria-modal="true">
+            <div class="ep-handle"></div>
+            <div class="ep-title">选择要导出的文档</div>
+            <div class="ep-toolbar">
+              <button class="ep-tool" data-tool="all">全选</button>
+              <button class="ep-tool" data-tool="none">全不选</button>
+              <button class="ep-tool" data-tool="invert">反选</button>
+              <div class="ep-sep"></div>
+              <label class="ep-format" data-fmt="md">.md</label>
+              <label class="ep-format active" data-fmt="json">.json</label>
+              <label class="ep-format" data-fmt="bundle">打包</label>
+            </div>
+            <div class="ep-list"></div>
+            <div class="ep-footer">
+              <button class="ep-btn ep-cancel">取消</button>
+              <button class="ep-btn ep-confirm">导出 <span class="ep-count">0</span></button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(sheet);
+
+        let selected = new Set(); // 默认 0 选中,用户主动勾选
+        let format = 'json';
+
+        const listEl = sheet.querySelector('.ep-list');
+        const countEl = sheet.querySelector('.ep-count');
+
+        const renderList = () => {
+          const sorted = this.sorted();
+          listEl.innerHTML = sorted.map(d => `
+            <label class="ep-item ${selected.has(d.id) ? 'checked' : ''}" data-id="${d.id}">
+              <input type="checkbox" ${selected.has(d.id) ? 'checked' : ''}>
+              <div class="ep-item-meta">
+                <div class="ep-item-title">${this._escapeHtml(d.title)}</div>
+                <div class="ep-item-sub">${d.wordCount.toLocaleString()} 字 · ${this._formatDate(d.updatedAt)}</div>
+              </div>
+            </label>
+          `).join('');
+          countEl.textContent = selected.size;
+        };
+
+        const close = () => {
+          sheet.classList.remove('show');
+          setTimeout(() => sheet.remove(), 220);
+        };
+
+        // 工具栏
+        sheet.querySelectorAll('.ep-tool').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const all = this.docs.map(d => d.id);
+            const t = btn.dataset.tool;
+            if (t === 'all') selected = new Set(all);
+            else if (t === 'none') selected = new Set();
+            else if (t === 'invert') {
+              const next = new Set();
+              all.forEach(id => { if (!selected.has(id)) next.add(id); });
+              selected = next;
+            }
+            renderList();
+          });
+        });
+
+        // 格式切换
+        sheet.querySelectorAll('.ep-format').forEach(el => {
+          el.addEventListener('click', () => {
+            sheet.querySelectorAll('.ep-format').forEach(x => x.classList.remove('active'));
+            el.classList.add('active');
+            format = el.dataset.fmt;
+          });
+        });
+
+        // checkbox 切换
+        listEl.addEventListener('click', (e) => {
+          const item = e.target.closest('.ep-item');
+          if (!item) return;
+          // 点击整行都触发,包括 checkbox 自身
+          e.preventDefault();
+          const id = item.dataset.id;
+          if (selected.has(id)) selected.delete(id);
+          else selected.add(id);
+          item.classList.toggle('checked');
+          item.querySelector('input').checked = selected.has(id);
+          countEl.textContent = selected.size;
+        });
+
+        // 底部按钮
+        sheet.querySelector('.ep-cancel').addEventListener('click', close);
+        sheet.querySelector('.ep-confirm').addEventListener('click', () => {
+          if (selected.size === 0) {
+            showToast('至少选一个文档');
+            return;
+          }
+          const ids = Array.from(selected);
+          if (format === 'bundle') {
+            this._exportBundle(ids);
+          } else {
+            // md / json:逐个下载,避免浏览器拦批量
+            ids.forEach((id, i) => {
+              const doc = this.docs.find(d => d.id === id);
+              if (!doc) return;
+              // 用 setTimeout 错开,部分浏览器对同时触发的下载会拦
+              setTimeout(() => {
+                if (format === 'md') this._exportSingleMd(doc);
+                else this._exportSingleJson(doc);
+              }, i * 120);
+            });
+          }
+          showToast(`已导出 ${ids.length} 个文档`);
+          close();
+        });
+
+        sheet.querySelector('.ep-mask').addEventListener('click', close);
+
+        renderList();
+        requestAnimationFrame(() => sheet.classList.add('show'));
+      },
+
+      // 把选中的文档打包成单个 JSON(兼容 importAll 格式)
+      _exportBundle(ids) {
+        const docs = ids
+          .map(id => this.docs.find(d => d.id === id))
+          .filter(Boolean);
+        if (!docs.length) return;
+        const data = {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          docs,
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `markdoc-export-${new Date().toISOString().slice(0, 10)}-${docs.length}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+
       // 统计
       stats() {
         const total = this.docs.length;
@@ -4432,7 +4771,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
         const btnExport = $('btn-doc-export');
         if (btnExport) btnExport.addEventListener('click', () => {
-          DocManager.exportAll();
+          DocManager.showExportPicker();
           closeDocsPanel();
         });
 
@@ -4440,21 +4779,16 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (btnImport) btnImport.addEventListener('click', () => {
           const input = document.createElement('input');
           input.type = 'file';
-          input.accept = '.json,application/json';
+          // 支持 .md / .markdown / .json 多选
+          input.accept = '.md,.markdown,.json,text/markdown,text/plain,application/json';
+          input.multiple = true;
           input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              const merge = confirm('合并到现有文档？\n\n确定 = 合并（保留现有）\n取消 = 替换（清空现有）');
-              const added = DocManager.importAll(ev.target.result, merge);
-              if (added > 0) showToast(`已导入 ${added} 个文档`);
-              DocManager.renderList();
-            };
-            reader.readAsText(file);
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            closeDocsPanel();
+            this._handleImportFiles(files);
           };
           input.click();
-          closeDocsPanel();
         });
 
         // 拦截 URL 参数（来自 PWA 快捷方式）
@@ -4472,6 +4806,53 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           const el = $('docs-stats');
           if (el) el.textContent = `${stats.total} 个文档 · ${stats.totalWords.toLocaleString()} 字`;
         }, 1000);
+      },
+
+      // 处理用户从文件选择器选中的文件,逐个按类型分发
+      // .md / .markdown / text-markdown → 单文件建一个新文档
+      // .json → 整体导入(走 DocManager.importAll,保留合并/替换 confirm)
+      _handleImportFiles(files) {
+        const mdFiles = [];
+        const jsonFiles = [];
+        files.forEach(f => {
+          const n = f.name.toLowerCase();
+          if (n.endsWith('.md') || n.endsWith('.markdown') || f.type === 'text/markdown' || f.type === 'text/plain') {
+            mdFiles.push(f);
+          } else if (n.endsWith('.json') || f.type === 'application/json') {
+            jsonFiles.push(f);
+          } else {
+            showToast(`不支持: ${f.name}`);
+          }
+        });
+
+        // md:每个文件建一个新文档
+        if (mdFiles.length > 0) {
+          let done = 0;
+          mdFiles.forEach(f => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              DocManager.importMd(ev.target.result, f.name);
+              done++;
+              if (done === mdFiles.length) {
+                showToast(`已导入 ${mdFiles.length} 个文档`);
+                DocManager.renderList();
+              }
+            };
+            reader.readAsText(f);
+          });
+        }
+
+        // json:整库导入,保留原来的合并/替换 confirm
+        if (jsonFiles.length > 0) {
+          const f = jsonFiles[0]; // 一次只处理一个 JSON 备份
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const merge = confirm('导入 JSON 备份？\n\n确定 = 合并（保留现有）\n取消 = 替换（清空现有）');
+            const added = DocManager.importAll(ev.target.result, merge);
+            if (added > 0) showToast(`已导入 ${added} 个文档`);
+          };
+          reader.readAsText(f);
+        }
       },
     };
 
