@@ -217,25 +217,28 @@ let dom;
   assert(!doc.querySelector('.export-picker'), 'picker closed after mask click');
 
   // ----------------------------------------------------------------
-  // 10) import 按钮 — 接受 .md 类型
+  // 10) import 按钮 — 复用静态 #file-input
+  // (注:本测试只验导出 picker,导入逻辑在 test-import-redesign.js)
   // ----------------------------------------------------------------
-  console.log('\n=== 10) import button 创建 input ===');
-  // 没法在 jsdom 里直接触发"用户选文件",但可以验证:点击 import 后
-  // 会被 sheet 关掉(docs panel 不一定开着),且 input 会被动态创建。
-  // 我们用 stub: hook createElement('input') 看看 accept / multiple
-  const origCreate = doc.createElement.bind(doc);
-  let inputSpy = null;
+  console.log('\n=== 10) import 按钮 — 复用静态 file-input ===');
+  const staticFileInput = doc.getElementById('file-input');
+  assert(staticFileInput, 'static #file-input exists');
+  assert(staticFileInput.accept.includes('.md'), `accept includes .md (got: ${staticFileInput.accept})`);
+  assert(staticFileInput.accept.includes('.json'), 'accept includes .json');
+  assert(staticFileInput.multiple === true, 'multiple = true');
+  // 文档库 import 按钮不应动态创建 input(避免 WebView 兼容问题)
+  const origCreate2 = doc.createElement.bind(doc);
+  let dynamicInputCreated2 = false;
   doc.createElement = function (tag) {
-    const el = origCreate(tag);
-    if (tag === 'input') inputSpy = el;
+    const el = origCreate2(tag);
+    if (tag === 'input') dynamicInputCreated2 = true;
     return el;
   };
   btnImport.click();
-  await new Promise(r => setTimeout(r, 100));
-  assert(inputSpy, 'input element created');
-  assert(inputSpy.accept && inputSpy.accept.includes('.md'), `accept includes .md (got: ${inputSpy.accept})`);
-  assert(inputSpy.accept.includes('.json'), 'accept includes .json');
-  assert(inputSpy.multiple === true, 'multiple = true');
+  await new Promise(r => setTimeout(r, 50));
+  assert(!dynamicInputCreated2, 'btn-doc-import does not dynamically create input');
+  assert(staticFileInput.dataset.target === 'library', `target = library (got: ${staticFileInput.dataset.target})`);
+  doc.createElement = origCreate2;
 
   // ----------------------------------------------------------------
   console.log('\n=== 日志 (last 5) ===');

@@ -27,6 +27,7 @@ import java.io.FileOutputStream
  * - shareText()        : 分享文本（调用系统分享面板）
  * - shareFile()        : 分享文件（保存 .md 到缓存目录后分享）
  * - saveToDownloads()  : 保存 Markdown 到 Downloads 目录（Android 10+）
+ * - saveFile()         : 调起 SAF 让用户选择位置保存文件（.md / .html / .json / .pdf）
  * - openFilePicker()   : 打开系统文件选择器（导入 .md）
  * - copyToClipboard()  : 复制到剪贴板
  * - getStatusBarHeight(): 通知 JS 状态栏高度（用于适配刘海屏）
@@ -35,7 +36,8 @@ import java.io.FileOutputStream
  */
 class WebAppInterface(
     private val context: Context,
-    private val onOpenFilePicker: () -> Unit
+    private val onOpenFilePicker: () -> Unit,
+    private val onSaveFile: () -> Unit
 ) {
 
     /**
@@ -102,7 +104,8 @@ class WebAppInterface(
 
     /**
      * 保存 Markdown 到 Downloads（Android 10+ 使用 MediaStore，10 以下直接写文件）
-     * 返回保存的文件名（JS 可用于提示用户）
+     * - 旧 API（抽屉"下载 .md 文件"按钮专用）
+     * - 新版"选位置"导出请用 saveFile()
      */
     @JavascriptInterface
     fun saveToDownloads(content: String, filename: String) {
@@ -111,7 +114,6 @@ class WebAppInterface(
                 filename else "$filename.md"
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // Android 10+ 使用 MediaStore
                 val resolver = context.contentResolver
                 val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
                 val item = android.content.ContentValues().apply {
@@ -125,7 +127,6 @@ class WebAppInterface(
                     showToast("已保存到 Downloads/马克档/$finalName")
                 }
             } else {
-                // Android 9 及以下：直接写公共下载目录
                 @Suppress("DEPRECATION")
                 val downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
                 val targetDir = File(downloads, "马克档")
@@ -142,13 +143,39 @@ class WebAppInterface(
 
     /**
      * 触发文件选择器（由 Activity 回调 onOpenFilePicker）
+     * target: "editor" 覆盖当前编辑器 / "library" 导入到文档库（多文件）
      * @JavascriptInterface 在 Binder 线程池调用，需要切到主线程
      */
     @JavascriptInterface
-    fun openFilePicker() {
+    fun openFilePicker(target: String = "editor") {
         android.os.Handler(android.os.Looper.getMainLooper()).post {
-            try { onOpenFilePicker.invoke() } catch (e: Throwable) {
+            try {
+                pendingImportTarget = target.ifBlank { "editor" }
+                onOpenFilePicker.invoke()
+            } catch (e: Throwable) {
                 Log.e(TAG, "openFilePicker", e)
+            }
+        }
+    }
+
+    /**
+     * 调起 SAF 让用户选择文件位置保存（.md / .html / .json / .pdf 等）
+     * 流程：
+     *   1) 把 content/filename/mimeType 暂存到 companion
+     *   2) 通过 onSaveFile 回调让 Activity 调起 createDocumentLauncher
+     *   3) Activity 拿到用户选择的 Uri 后写入内容
+     *   4) Activity 通过 window.__onAndroidSaveFile 回调 JS 通知成功/取消
+     */
+    @JavascriptInterface
+    fun saveFile(content: String, filename: String, mimeType: String) {
+        android.os.Handler(android.os.Looper.getMainLooper()).post {
+            try {
+                pendingContent = content
+                pendingFilename = filename
+                pendingMimeType = mimeType.ifBlank { "text/plain" }
+                onSaveFile.invoke()
+            } catch (e: Throwable) {
+                Log.e(TAG, "saveFile 失败", e)
             }
         }
     }
@@ -216,5 +243,18 @@ class WebAppInterface(
 
     companion object {
         private const val TAG = "WebAppInterface"
+
+        // 待保存文件（WebAppInterface 触发，由 MainActivity 的 launcher 接收）
+        // 字段为 public 让同进程的其他类（MainActivity）可读写
+        @Volatile
+        var pendingFilename: String = ""
+        @Volatile
+        var pendingMimeType: String = "text/plain"
+        @Volatile
+        var pendingContent: String = ""
+
+        // 待导入目标（editor / library），由 openFilePicker 设置，由 launcher 接收
+        @Volatile
+        var pendingImportTarget: String = "editor"
     }
 }

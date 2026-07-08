@@ -12,8 +12,8 @@ android {
         applicationId = "com.markdoc.app"
         minSdk = 24              // Android 7.0，兼容绝大多数设备
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.8"
+        versionCode = 3
+        versionName = "1.0.9"
 
         // 让 JS 可以检测是否运行在原生 App 内
         buildConfigField("String", "NATIVE_BUILD", "\"android\"")

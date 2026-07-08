@@ -52,11 +52,32 @@ class MainActivity : AppCompatActivity() {
 
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { handleImportedFile(it) } }
+    ) { uri: Uri? -> uri?.let { handleImportedFile(listOf(it)) } }
+
+    // 多文件选择器：替代旧的 openDocumentLauncher（只支持单文件）
+    // 用 OpenMultipleDocuments 让用户能一次选多个 .md / .json
+    private val openDocumentMultipleLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris: List<Uri>? ->
+        if (uris.isNullOrEmpty()) {
+            // 没选文件视为取消;target 已经回退到原值(下一次 openFilePicker 会刷新)
+            return@registerForActivityResult
+        }
+        handleImportedFile(uris)
+    }
 
     private val openDocumentLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? -> uri?.let { handleImportedFile(it) } }
+    ) { uri: Uri? -> uri?.let { handleImportedFile(listOf(it)) } }
+
+    /**
+     * CreateDocument - 让用户选位置保存导出文件
+     * 用通配 mime 让用户在任意目录保存任意扩展名
+     * （写入什么内容由我们决定，SAF 只给个 file URI）
+     */
+    private val createDocumentLauncher = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain")
+    ) { uri: Uri? -> handleSavedFile(uri) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -267,7 +288,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.addJavascriptInterface(
-            WebAppInterface(this) { openFilePicker() },
+            WebAppInterface(
+                context = this,
+                onOpenFilePicker = { openFilePicker() },
+                onSaveFile = { openSaveFilePicker() }
+            ),
             "Android"
         )
     }
@@ -321,29 +346,108 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openFilePicker() {
+        // 优先用多文件选择器（OpenMultipleDocuments）—— 支持一次选多个 .md / .json
+        // 在编辑器模式下也用多选：用户可以一次选一个 .md 或者多个 .json
         try {
-            openDocumentLauncher.launch(arrayOf("text/markdown", "text/plain", "*/*"))
+            openDocumentMultipleLauncher.launch(arrayOf("text/markdown", "text/plain", "application/json", "*/*"))
         } catch (e: Throwable) {
-            Log.e(TAG, "SAF 失败，回退", e)
-            try { filePickerLauncher.launch("*/*") } catch (e2: Throwable) {
-                Log.e(TAG, "GetContent 也失败", e2)
-                showToastLong("文件选择器不可用")
+            Log.e(TAG, "多文件 SAF 失败，回退单选", e)
+            try { openDocumentLauncher.launch(arrayOf("text/markdown", "text/plain", "application/json", "*/*")) }
+            catch (e2: Throwable) {
+                Log.e(TAG, "单文件 SAF 也失败，回退 GetContent", e2)
+                try { filePickerLauncher.launch("*/*") } catch (e3: Throwable) {
+                    Log.e(TAG, "GetContent 也失败", e3)
+                    showToastLong("文件选择器不可用")
+                }
             }
         }
     }
 
-    private fun handleImportedFile(uri: Uri) {
+    /**
+     * 调起 SAF ACTION_CREATE_DOCUMENT，让用户在任意目录选位置保存文件
+     * mime/filename 由 WebAppInterface 在 companion 中暂存
+     */
+    private fun openSaveFilePicker() {
         try {
-            val text = contentResolver.openInputStream(uri)?.use { stream ->
-                BufferedReader(InputStreamReader(stream, Charsets.UTF_8)).readText()
-            } ?: run { showToastLong("读取失败"); return }
-            val js = "if(window.importMarkdown){window.importMarkdown(${jsString(text)});}else{alert('导入接口未就绪');}"
-            webView.evaluateJavascript(js, null)
-            showToastLong("已导入文件")
+            val filename = WebAppInterface.pendingFilename.ifBlank { "markdoc.md" }
+            val mime = WebAppInterface.pendingMimeType.ifBlank { "text/plain" }
+            createDocumentLauncher.launch(filename)
         } catch (e: Throwable) {
-            Log.e(TAG, "导入失败", e)
-            showToastLong("导入失败：${e.message}")
+            Log.e(TAG, "saveFile 启动 SAF 失败", e)
+            // JS 端 60s 超时兜底，此处不再单独通知
         }
+    }
+
+    /**
+     * SAF CreateDocument 回调：用户已选位置 → 写入内容 → 通知 JS
+     */
+    private fun handleSavedFile(uri: Uri?) {
+        if (uri == null) {
+            notifySaveResult("cancel")
+            return
+        }
+        try {
+            val content = WebAppInterface.pendingContent
+            contentResolver.openOutputStream(uri)?.use { stream ->
+                stream.write(content.toByteArray(Charsets.UTF_8))
+            }
+            val name = WebAppInterface.pendingFilename.ifBlank { "文件" }
+            showToastLong("已保存 $name")
+            notifySaveResult("ok")
+        } catch (e: Throwable) {
+            Log.e(TAG, "写入失败", e)
+            notifySaveResult("error:${e.message ?: "unknown"}")
+        } finally {
+            // 清空 pending,避免下一次误用
+            WebAppInterface.pendingContent = ""
+            WebAppInterface.pendingFilename = ""
+            WebAppInterface.pendingMimeType = "text/plain"
+        }
+    }
+
+    private fun notifySaveResult(status: String) {
+        try {
+            val safe = status.replace("\\", "\\\\").replace("'", "\\'")
+            webView.evaluateJavascript(
+                "if(window.__onAndroidSaveFile){window.__onAndroidSaveFile('$safe');}",
+                null
+            )
+        } catch (e: Throwable) {
+            Log.w(TAG, "save result 回调失败", e)
+        }
+    }
+
+    private fun handleImportedFile(uris: List<Uri>) {
+        if (uris.isEmpty()) return
+        // 取出本次 launch 的 target，再清空（pendingTarget 是一次性的，避免污染下次）
+        val target = WebAppInterface.pendingImportTarget.ifBlank { "editor" }
+        WebAppInterface.pendingImportTarget = "editor"
+
+        // 串行读文件并回调 JS，避免并发 evaluateJavascript 竞态
+        Thread {
+            try {
+                uris.forEachIndexed { idx, uri ->
+                    try {
+                        val text = contentResolver.openInputStream(uri)?.use { stream ->
+                            BufferedReader(InputStreamReader(stream, Charsets.UTF_8)).readText()
+                        } ?: run {
+                            webView.post { showToastLong("读取失败") }
+                            return@forEachIndexed
+                        }
+                        val name = uri.lastPathSegment?.substringAfterLast('/') ?: ""
+                        // 透传 target 给 JS，方便 ImportManager 路由到 editor / library
+                        val js = "if(window.importMarkdown){window.importMarkdown(${jsString(text)},${jsString(name)},${jsString(target)});}else{console.warn('importMarkdown 未就绪');}"
+                        webView.post { webView.evaluateJavascript(js, null) }
+                    } catch (inner: Throwable) {
+                        Log.e(TAG, "读取单个文件失败", inner)
+                        webView.post { showToastLong("读取失败：${inner.message}") }
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "导入失败", e)
+                webView.post { showToastLong("导入失败：${e.message}") }
+            }
+        }.start()
     }
 
     private fun handleIntent(intent: Intent?) {
@@ -351,7 +455,7 @@ class MainActivity : AppCompatActivity() {
         if (Intent.ACTION_VIEW == intent.action) {
             val uri = intent.data
             if (uri != null) {
-                binding.webview.postDelayed({ handleImportedFile(uri) }, 500)
+                binding.webview.postDelayed({ handleImportedFile(listOf(uri)) }, 500)
             }
         }
     }

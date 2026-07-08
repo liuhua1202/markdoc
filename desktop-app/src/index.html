@@ -188,20 +188,14 @@
       gap: 8px;
       flex-shrink: 0;
       min-width: 0;
+      padding-left: 2px;
     }
 
     .nav-logo {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
       flex-shrink: 0;
-    }
-
-    .nav-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--fg);
-      letter-spacing: 0.5px;
     }
 
     .nav-actions {
@@ -805,9 +799,10 @@
        ============================================================ */
     .toast {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom) + 80px);
+      /* 顶部弹出:navbar 下方 (--navbar-h 由 JS 同步,含 safe-area-inset-top) */
+      top: calc(var(--navbar-h, 56px) + 8px);
       left: 50%;
-      transform: translateX(-50%) translateY(20px);
+      transform: translateX(-50%) translateY(-20px);
       background: var(--fg);
       color: var(--bg);
       padding: 12px 20px;
@@ -1103,6 +1098,258 @@
       text-align: center;
       margin-top: 8px;
       font-weight: 600;
+    }
+
+    /* 导出 picker（多选 + 格式切换） */
+    .export-picker {
+      position: fixed;
+      inset: 0;
+      z-index: 1700;     /* 高于 docs-panel(1601) */
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .export-picker .ep-mask {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .export-picker.show .ep-mask { opacity: 1; }
+
+    .export-picker .ep-body {
+      position: relative;
+      width: 100%;
+      max-width: 640px;
+      background: var(--bg);
+      border-radius: 20px 20px 0 0;
+      padding: 8px 12px calc(env(safe-area-inset-bottom) + 12px);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .export-picker.show .ep-body { transform: translateY(0); }
+
+    .export-picker .ep-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--border-strong);
+      border-radius: 2px;
+      margin: 6px auto 8px;
+    }
+    .export-picker .ep-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--fg);
+      padding: 4px 0 10px;
+    }
+
+    .export-picker .ep-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px 10px;
+      flex-wrap: wrap;
+    }
+    .export-picker .ep-tool {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg-soft);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .export-picker .ep-tool:active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+    .export-picker .ep-sep {
+      flex: 1;
+    }
+    .export-picker .ep-format {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--fg-soft);
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+    }
+    .export-picker .ep-format.active {
+      background: var(--brand);
+      color: #fff;
+      border-color: var(--brand);
+    }
+
+    .export-picker .ep-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 4px 0 8px;
+      max-height: 50vh;
+    }
+    .export-picker .ep-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      margin: 2px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+    .export-picker .ep-item:hover,
+    .export-picker .ep-item:active {
+      background: var(--bg-soft);
+    }
+    .export-picker .ep-item.checked {
+      background: var(--brand-soft);
+    }
+    .export-picker .ep-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--brand);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .export-picker .ep-item-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .export-picker .ep-item-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .export-picker .ep-item.checked .ep-item-title {
+      color: var(--brand);
+    }
+    .export-picker .ep-item-sub {
+      font-size: 11px;
+      color: var(--fg-muted);
+      margin-top: 2px;
+    }
+
+    .export-picker .ep-hint {
+      font-size: 11px;
+      color: var(--fg-muted);
+      text-align: center;
+      padding: 4px 8px 6px;
+      min-height: 18px;
+    }
+    .export-picker .ep-footer {
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+    .export-picker .ep-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .export-picker .ep-btn.ep-cancel {
+      flex: 0 0 100px;
+      background: var(--bg-elev);
+      color: var(--fg);
+    }
+    .export-picker .ep-btn.ep-confirm {
+      background: var(--brand);
+      color: #fff;
+    }
+    .export-picker .ep-btn.ep-confirm:active {
+      transform: scale(0.98);
+    }
+    .export-picker .ep-count {
+      display: inline-block;
+      min-width: 18px;
+      padding: 0 4px;
+      margin-left: 2px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 9px;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    /* 导入目标 picker(ip-* 系列) */
+    .export-picker .ip-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .export-picker .ip-opt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px 12px;
+      background: var(--bg-elev);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      transition: border-color 0.15s, transform 0.08s;
+    }
+    .export-picker .ip-opt:hover,
+    .export-picker .ip-opt:active {
+      border-color: var(--brand);
+    }
+    .export-picker .ip-opt:active {
+      transform: scale(0.99);
+    }
+    .export-picker .ip-opt.primary {
+      border-color: var(--brand);
+      background: var(--brand-soft, rgba(255, 90, 95, 0.08));
+    }
+    .export-picker .ip-opt-icon {
+      flex: 0 0 36px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-soft);
+      color: var(--brand);
+      border-radius: 10px;
+    }
+    .export-picker .ip-opt-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+    .export-picker .ip-opt-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .export-picker .ip-opt-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      line-height: 1.3;
+    }
+    .export-picker .ip-opt-desc {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--fg-muted);
+      line-height: 1.4;
     }
 
     /* ============================================================
@@ -1604,7 +1851,8 @@
     /* 底部浮动控制面板 */
     .reader-controls {
       position: fixed;
-      bottom: calc(env(safe-area-inset-bottom) + 16px);
+      /* 16 → 36:避开屏幕圆角裁剪,稍微往中间收一些 */
+      bottom: calc(env(safe-area-inset-bottom) + 36px);
       left: 50%;
       transform: translateX(-50%) translateY(100%);
       background: var(--reader-toolbar-bg, rgba(253, 252, 247, 0.95));
@@ -1615,13 +1863,22 @@
       padding: 6px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
       z-index: 1502;
       transition: transform 0.3s ease, opacity 0.2s ease;
       opacity: 0;
       pointer-events: none;
+      /* 防圆角裁切:左右各留 16px,safe-area 也吃一份 */
+      max-width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right));
+      box-sizing: border-box;
+      flex-wrap: nowrap;          /* 强制单行 — 不要换行成两行 */
+      overflow-x: auto;           /* 真装不下就横向滚动,别换行 */
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
+    .reader-controls::-webkit-scrollbar { display: none; }
     .reader-controls.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
@@ -1630,32 +1887,35 @@
 
     .reader-control-group {
       display: flex;
-      gap: 2px;
-      padding: 0 4px;
+      gap: 1px;
+      padding: 0 2px;
       border-right: 1px solid var(--reader-border, rgba(0,0,0,0.08));
+      flex-shrink: 0;            /* 单行布局:不让小组被压缩 */
     }
     .reader-control-group:last-child {
       border-right: none;
     }
     .reader-control-group .label {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--reader-fg-muted, #9A98A4);
-      padding: 0 6px;
+      padding: 0 3px;
       align-self: center;
-      letter-spacing: 0.5px;
+      letter-spacing: 0;
+      flex-shrink: 0;
     }
     .reader-control-group .opt {
-      min-width: 32px;
-      min-height: 32px;
-      padding: 0 8px;
+      min-width: 28px;
+      min-height: 28px;
+      padding: 0 4px;
       border: none;
       background: transparent;
       color: var(--reader-fg, #1A1829);
-      border-radius: 8px;
+      border-radius: 7px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       font-family: inherit;
+      flex-shrink: 0;
     }
     .reader-control-group .opt:hover {
       background: rgba(0,0,0,0.06);
@@ -1761,14 +2021,27 @@
 
     /* ============================================================
        工具提示（主题/视图按钮长按）
-       — 之前 z-index: 100,被 reader(1500)/drawer(1601)/outline(1601)/
-         find-panel(1700) 全部盖住,长按看不到提示
+
+       关键坑:.nav-btn:active 有 transform: scale(0.94),
+       transform 会创建独立的 stacking context,把 tooltip 困在 button
+       内部的小世界。tooltip 自身 z-index 再高,也是 button 内的层级,
+       外面的 reader(1500)/drawer(1601)/outline(1601)/find(1700)
+       在 root stacking context 里直接盖住 button 本身(0)。
+
+       修复:[data-tip]:active 给 button 一个超高的 z-index,让
+       button 的 stacking context 直接升到顶,内部的 ::after
+       自动跟着浮到所有浮层之上。
        ============================================================ */
     [data-tip] { position: relative; }
+    [data-tip]:active {
+      z-index: 3000;   /* 关键:active 时把整个 button 抬到所有浮层之上 */
+    }
     [data-tip]:active::after {
       content: attr(data-tip);
       position: absolute;
-      bottom: -28px;
+      /* 工具提示浮在按钮紧邻下方(navbar 底部以下、workspace 顶部之上)。
+         这样视觉上属于"上方区域",且不会被 navbar 上方的状态栏裁切。 */
+      top: calc(100% + 6px);
       left: 50%;
       transform: translateX(-50%);
       background: var(--fg);
@@ -1778,14 +2051,13 @@
       font-size: 11px;
       white-space: nowrap;
       pointer-events: none;
-      z-index: 2000;   /* 高于所有浮层:reader/drawer/outline/docs/find */
+      z-index: 1;   /* 在 button(3000)的 stacking context 内,保持正向叠放 */
     }
 
     /* ============================================================
        小屏适配
        ============================================================ */
     @media (max-width: 360px) {
-      .nav-title { font-size: 15px; }
       .nav-btn { padding: 0 8px; font-size: 12px; }
       .view-toggle-btn { padding: 0 8px; font-size: 11px; }
       .preview-content { font-size: 15px; }
@@ -1968,8 +2240,7 @@
     <!-- 顶部导航栏(data-mode 由 ViewManager 控制:edit / reader) -->
     <header id="navbar" class="navbar" data-mode="edit">
       <div class="nav-brand">
-        <img src="logo.svg" class="nav-logo" alt="logo" />
-        <div class="nav-title">马克档</div>
+        <img src="logo.svg" class="nav-logo" alt="马克档 logo" />
       </div>
 
       <div class="nav-actions">
@@ -2043,11 +2314,13 @@
       <div class="doc-list" id="doc-list"></div>
       <div class="docs-footer">
         <button class="btn-secondary" id="btn-doc-export">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <!-- 导出:箭头朝上离开(数据从 app 流出),视觉 = upload -->
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           导出
         </button>
         <button class="btn-secondary" id="btn-doc-import">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <!-- 导入:箭头朝下进入(数据从外部进 app),视觉 = download -->
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           导入
         </button>
         <button class="btn-secondary" id="btn-doc-template" title="从模板新建">
@@ -2147,6 +2420,16 @@
       </li>
 
       <li>
+        <button class="drawer-item" id="act-download-pdf">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h6"/><path d="M9 17h4"/></svg></span>
+          <span class="meta">
+            <span class="label">导出 PDF</span>
+            <span class="desc">系统打印对话框，另存为 PDF 可选位置</span>
+          </span>
+        </button>
+      </li>
+
+      <li>
         <button class="drawer-item" id="act-import">
           <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
           <span class="meta">
@@ -2225,8 +2508,10 @@
     </ul>
   </div>
 
-  <!-- 文件导入（隐藏的 input） -->
-  <input type="file" id="file-input" accept=".md,.markdown,.txt,text/markdown,text/plain" style="display:none" />
+  <!-- 文件导入(隐藏的 input,所有入口共用)
+       .md / .markdown / .json 都接受,multiple 开启
+       change 由 ImportManager 统一分发 -->
+  <input type="file" id="file-input" accept=".md,.markdown,.txt,.json,text/markdown,text/plain,application/json" multiple style="display:none" />
 
   <!-- Toast 提示 -->
   <div class="toast" id="toast"></div>
@@ -2605,6 +2890,76 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
     }
 
+    // 抽屉"导入"按钮的 mini picker:让用户选导入到当前编辑器 / 文档库
+    // onCancel?: 关闭抽屉的回调
+    function showImportTargetPicker(onCancel) {
+      // 已经存在则不重复弹
+      if (document.getElementById('import-target-picker')) return;
+
+      const wrap = document.createElement('div');
+      wrap.id = 'import-target-picker';
+      wrap.className = 'export-picker';
+      wrap.innerHTML = `
+        <div class="ep-mask"></div>
+        <div class="ep-body" role="dialog" aria-modal="true" style="max-width:420px;">
+          <div class="ep-handle"></div>
+          <div class="ep-title">选择导入目标</div>
+          <div class="ep-toolbar" style="justify-content:center;gap:6px;">
+            <span style="color:var(--fg-muted);font-size:12px;">支持 .md / .markdown / .json(多选)</span>
+          </div>
+          <div class="ip-options" style="padding:8px 4px 0;">
+            <button class="ip-opt" data-target="editor">
+              <div class="ip-opt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+              <div class="ip-opt-meta">
+                <div class="ip-opt-label">导入到当前编辑器</div>
+                <div class="ip-opt-desc">.md 单选,选完覆盖当前内容(有确认提示)</div>
+              </div>
+            </button>
+            <button class="ip-opt primary" data-target="library">
+              <div class="ip-opt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </div>
+              <div class="ip-opt-meta">
+                <div class="ip-opt-label">导入到文档库</div>
+                <div class="ip-opt-desc">.md 新建文档 / .json 合并或替换(推荐)</div>
+              </div>
+            </button>
+          </div>
+          <div class="ep-footer">
+            <button class="ep-btn ep-cancel">取消</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(wrap);
+
+      const close = () => {
+        wrap.remove();
+        if (typeof onCancel === 'function') onCancel();
+      };
+
+      wrap.querySelector('.ep-mask').addEventListener('click', close);
+      wrap.querySelector('.ep-cancel').addEventListener('click', close);
+
+      wrap.querySelectorAll('.ip-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.target;
+          // 走统一调度（原生效 / web 都通）
+          if (typeof ImportManager !== 'undefined' && ImportManager.openPicker) {
+            ImportManager.openPicker(target);
+          } else {
+            const fi = $('file-input');
+            if (fi) {
+              fi.dataset.target = target;
+              fi.click();
+            }
+          }
+          close();
+        });
+      });
+    }
+
     // 把 CSS 变量值应用到内联样式，生成自包含 HTML
     function buildSelfContainedHTML(contentEl) {
       const cs = getComputedStyle(document.documentElement);
@@ -2688,7 +3043,25 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         }
         this.updateIcon();
         this.updateCodeTheme();
+        // 同步 reader 主题(如果用户没在 reader 控件里显式选过主题,跟随 app 切换)
+        this.syncReaderTheme();
         if (save) localStorage.setItem(STORAGE_KEYS.theme, mode);
+      },
+
+      // 把 app 整体主题映射到 reader 内部主题:
+      //   light → paper(白)
+      //   dark  → dark (深)
+      //   auto 取决于系统,但 data-theme 已被上面 set 成 'light' 或 'dark'
+      // 仅在 userExplicitTheme === false 时才同步,避免覆盖用户手动选过的主题
+      syncReaderTheme() {
+        if (typeof Reader === 'undefined' || !Reader.settings) return;
+        if (Reader.settings.userExplicitTheme) return;
+        const appTheme = document.documentElement.getAttribute('data-theme');
+        const newReaderTheme = appTheme === 'dark' ? 'dark' : 'paper';
+        if (Reader.settings.theme !== newReaderTheme) {
+          Reader.settings.theme = newReaderTheme;
+          if (Reader.isOpen) Reader._applySettings();
+        }
       },
 
       updateCodeTheme() {
@@ -2742,6 +3115,8 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         font: 'sans',            // sans/serif/mono
         size: 'medium',          // small/medium/large/xlarge
         lineHeight: 'comfortable', // compact/comfortable/relaxed
+        userExplicitTheme: false,  // 用户是否在 reader 控件里显式选过主题
+                                   // false 时跟随 app 整体主题,选过之后锁定
       },
 
       settings: null,
@@ -2752,7 +3127,16 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (raw) {
           try { this.settings = JSON.parse(raw); } catch (_) {}
         }
-        if (!this.settings) this.settings = { ...this.defaults };
+        if (!this.settings) {
+          // 首次进入 / 没有用户偏好 — 根据 app 整体主题决定 reader 主题
+          // 这样切到 dark 模式进 reader 就直接是深色,不用再手动切
+          //   app light → reader paper(白)
+          //   app dark  → reader dark (深)
+          //   app auto  → reader paper(保守默认,跟随系统需用户显式切)
+          const appTheme = document.documentElement.getAttribute('data-theme');
+          const readerTheme = appTheme === 'dark' ? 'dark' : 'paper';
+          this.settings = { ...this.defaults, theme: readerTheme };
+        }
 
         // 绑定事件处理函数（保留 this 上下文）
         // 必须在 init() 里绑定一次，否则 addEventListener 拿到的引用无法 remove
@@ -2808,7 +3192,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (this.isOpen) return;
 
         // 兜底：若 init() 尚未执行（boot 阶段就被调用），保证 settings 有默认值
-        if (!this.settings) this.settings = { ...this.defaults };
+        // 同时根据 app 整体主题决定 reader theme,和 init() 行为一致
+        if (!this.settings) {
+          const appTheme = document.documentElement.getAttribute('data-theme');
+          const readerTheme = appTheme === 'dark' ? 'dark' : 'paper';
+          this.settings = { ...this.defaults, theme: readerTheme };
+        }
 
         // 确保事件处理函数已绑定
         if (!this._onScrollBound) this._onScrollBound = this._onScroll.bind(this);
@@ -3037,6 +3426,7 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
       setSetting(type, value) {
         const key = type === 'lineHeight' ? 'lineHeight' : type;
         this.settings[key] = value;
+        if (type === 'theme') this.settings.userExplicitTheme = true;  // 显式选了主题,锁定
         localStorage.setItem('markdoc.reader.v1', JSON.stringify(this.settings));
         this._applySettings();
       },
@@ -3472,6 +3862,10 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         this.save();
       },
 
+      getCurrentLength() {
+        return this.editor ? (this.editor.value || '').length : 0;
+      },
+
       clear() {
         this.set('');
         // 原生 App 下同步清除本地备份
@@ -3488,6 +3882,309 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
     // ----------------------------------------------------------
     // 8.5 DocManager - 多文档管理
     // ----------------------------------------------------------
+    // ----------------------------------------------------------
+    // 8.0 统一导入（所有入口:文档库按钮 / 抽屉 / 拖拽 / Native 都走它）
+    //
+    // 行为契约：
+    // - .md / .markdown / .txt / text-markdown / text-plain → 新建文档
+    // - .json / application/json → 整库合并/替换(走 DocManager.importAll)
+    // - 其他类型 → toast 警告并跳过
+    // - 混合选择(md+json)→ 分批处理,分别 toast
+    // - 一次只处理 1 个 JSON(多个 JSON 会按顺序串行,后者覆盖前者)
+    //
+    // 返回值: { mdCount, jsonCount, skipped:[{name,reason}] }
+    // ----------------------------------------------------------
+    const ImportManager = {
+      isMdFile(f) {
+        const n = (f.name || '').toLowerCase();
+        return n.endsWith('.md') || n.endsWith('.markdown') || n.endsWith('.txt')
+          || f.type === 'text/markdown' || f.type === 'text/plain';
+      },
+      isJsonFile(f) {
+        const n = (f.name || '').toLowerCase();
+        return n.endsWith('.json') || f.type === 'application/json';
+      },
+
+      // 读单个文件为文本
+      _readFile(file) {
+        return new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = e => resolve(e.target.result);
+          r.onerror = () => reject(r.error || new Error('读取失败'));
+          r.readAsText(file, 'utf-8');
+        });
+      },
+
+      // 接受 FileList / File[] / 单个 File
+      // onProgress?: (done, total, fileName) => void
+      async importFiles(files, { onProgress } = {}) {
+        const list = Array.from(files || []);
+        if (!list.length) return { mdCount: 0, jsonCount: 0, skipped: [] };
+
+        const mdFiles = [];
+        const jsonFiles = [];
+        const skipped = [];
+
+        for (const f of list) {
+          if (this.isJsonFile(f)) jsonFiles.push(f);
+          else if (this.isMdFile(f)) mdFiles.push(f);
+          else skipped.push({ name: f.name, reason: '不支持的文件类型' });
+        }
+
+        let mdCount = 0;
+        let jsonCount = 0;
+        const total = mdFiles.length + jsonFiles.length;
+        let done = 0;
+
+        // .md 批量:并行读 + 逐个建文档
+        for (const f of mdFiles) {
+          try {
+            const text = await this._readFile(f);
+            DocManager.importMd(text, f.name);
+            mdCount++;
+          } catch (e) {
+            skipped.push({ name: f.name, reason: '读取失败' });
+          }
+          done++;
+          if (onProgress) onProgress(done, total, f.name);
+        }
+
+        // .json 串行(每个都要 confirm,避免叠加 dialog)
+        for (const f of jsonFiles) {
+          try {
+            const text = await this._readFile(f);
+            const merge = window.confirm(
+              `导入 JSON 备份「${f.name}」？\n\n` +
+              `确定 = 合并（保留现有文档）\n` +
+              `取消 = 替换（清空现有文档）`
+            );
+            const added = DocManager.importAll(text, merge);
+            if (added > 0) jsonCount += added;
+            else skipped.push({ name: f.name, reason: '未发现文档' });
+          } catch (e) {
+            skipped.push({ name: f.name, reason: '解析失败' });
+          }
+          done++;
+          if (onProgress) onProgress(done, total, f.name);
+        }
+
+        // 汇总 toast
+        const parts = [];
+        if (mdCount) parts.push(`${mdCount} 个 .md 文档`);
+        if (jsonCount) parts.push(`${jsonCount} 个 .json 文档`);
+        if (parts.length) showToast(`已导入 ${parts.join(' + ')}`);
+        for (const s of skipped) showToast(`跳过: ${s.name}（${s.reason}）`, 3000);
+
+        return { mdCount, jsonCount, skipped };
+      },
+
+      // 抽屉/单文件编辑器:导入到当前编辑器(.md 单选 + 覆盖确认)
+      // target: 'editor' = 覆盖当前编辑器内容;'library' = 走 importFiles
+      importToTarget(files, target = 'editor') {
+        if (target === 'editor') {
+          // 只取第一个 .md
+          const md = Array.from(files || []).find(f => this.isMdFile(f));
+          if (!md) {
+            showToast('请选择 .md / .markdown / .txt 文件');
+            return;
+          }
+          if (typeof ContentManager === 'undefined') {
+            // 没 ContentManager(纯文档库模式)走 importFiles
+            return this.importFiles([md]);
+          }
+          if (ContentManager.getCurrentLength && ContentManager.getCurrentLength() > 0) {
+            if (!confirm(`当前编辑器有未保存内容,确认覆盖为「${md.name}」吗？`)) return;
+          }
+          this._readFile(md).then(text => {
+            ContentManager.set(text);
+            showToast(`已导入到编辑器: ${md.name}`);
+          }).catch(err => {
+            showToast('读取失败:' + err.message);
+          });
+        } else {
+          return this.importFiles(files);
+        }
+      },
+
+      // 统一打开文件选择器入口
+      //   原生 Android: 走 window.Android.openFilePicker(target) 调起 SAF (支持多选)
+      //   Web/PWA: 走 <input type="file"> 的 .click()
+      // 区别: js 触发 .click() 在部分 WebView 上无效 → 全部统一成本地原生调用
+      //
+      // target: 'editor' = 导入到当前编辑器;'library' = 导入到文档库
+      isNative() {
+        return typeof window !== 'undefined'
+          && window.Android
+          && typeof window.Android.isNative === 'function'
+          && window.Android.isNative()
+          && typeof window.Android.openFilePicker === 'function';
+      },
+
+      openPicker(target = 'library') {
+        target = target === 'editor' ? 'editor' : 'library';
+        if (this.isNative()) {
+          try {
+            window.Android.openFilePicker(target);
+            return true;
+          } catch (e) {
+            console.warn('Android.openFilePicker 失败，回退到 <input>', e);
+          }
+        }
+        // 走 <input type="file">（让原生 Android 也兜底走这里，避免任何 native 调用失败时全崩）
+        const fi = document.getElementById('file-input');
+        if (!fi) {
+          showToast && showToast('文件选择器未就绪');
+          return false;
+        }
+        fi.value = '';
+        fi.dataset.target = target;
+        fi.click();
+        return true;
+      },
+    };
+
+    // ----------------------------------------------------------
+    // 8.05 SaveFilePicker — 统一的"保存到文件"工具
+    //
+    // 三档降级：
+    //   1) 原生 Android 端 → window.Android.saveFile()
+    //      调起 SAF (ACTION_CREATE_DOCUMENT)，用户可在任意目录选择保存位置
+    //   2) Web 端 File System Access API → window.showSaveFilePicker()
+    //      Chrome / Edge / Opera 支持，弹原生"另存为"对话框，可选位置
+    //   3) 兜底：<a download> 触发默认下载
+    //
+    // 返回 'saved' | 'cancelled'
+    // ----------------------------------------------------------
+    const SaveFilePicker = {
+      // 原生回调 Promise 解析（Android 端保存完成后会调 window.__onAndroidSaveFile）
+      _nativeResolve: null,
+      _nativeTimer: null,
+
+      _capabilities() {
+        const fsAccess = typeof window.showSaveFilePicker === 'function';
+        const native = typeof window.Android !== 'undefined'
+          && typeof window.Android.isNative === 'function'
+          && typeof window.Android.saveFile === 'function';
+        return { fsAccess, native };
+      },
+
+      // 描述当前可用的能力（用于 UI 提示）
+      describe() {
+        const c = this._capabilities();
+        if (c.native) return '可选择保存位置';
+        if (c.fsAccess) return '可选择保存位置';
+        return '将下载到默认下载目录';
+      },
+
+      // 保存到文件
+      // content: string | Blob
+      // filename: 建议文件名（含扩展名）
+      // mimeType: 例如 'text/markdown'
+      async save({ content, filename, mimeType = 'text/plain' }) {
+        const safeName = (filename || 'untitled').replace(/[\\/:*?"<>|]/g, '_');
+        const c = this._capabilities();
+
+        // 1) 原生端
+        if (c.native) {
+          try {
+            return await this._saveNative(content, safeName, mimeType);
+          } catch (e) {
+            console.warn('Android saveFile 失败，回退到浏览器下载', e);
+            this._fallbackDownload(content, safeName, mimeType);
+            return 'saved';
+          }
+        }
+
+        // 2) File System Access API
+        if (c.fsAccess) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: safeName,
+              types: [{
+                description: safeName,
+                accept: { [mimeType]: ['.' + safeName.split('.').pop()] },
+              }],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            showToast && showToast(`已保存到 ${handle.name || safeName}`);
+            return 'saved';
+          } catch (e) {
+            // 用户取消(AbortError) 不算错误
+            if (e && (e.name === 'AbortError' || e.name === 'NotAllowedError')) {
+              return 'cancelled';
+            }
+            console.warn('showSaveFilePicker 失败，回退到浏览器下载', e);
+          }
+        }
+
+        // 3) 兜底：自动下载
+        this._fallbackDownload(content, safeName, mimeType);
+        return 'saved';
+      },
+
+      _saveNative(content, filename, mimeType) {
+        return new Promise((resolve) => {
+          // 安装一次性回调
+          this._nativeResolve = resolve;
+          // 60 秒超时兜底（SAF 卡死等场景）
+          if (this._nativeTimer) clearTimeout(this._nativeTimer);
+          this._nativeTimer = setTimeout(() => {
+            if (this._nativeResolve === resolve) {
+              this._nativeResolve = null;
+              resolve('cancelled');
+            }
+          }, 60000);
+
+          try {
+            window.Android.saveFile(String(content), filename, mimeType);
+          } catch (e) {
+            if (this._nativeTimer) clearTimeout(this._nativeTimer);
+            this._nativeResolve = null;
+            throw e;
+          }
+        });
+      },
+
+      _fallbackDownload(content, filename, mimeType) {
+        try {
+          const blob = content instanceof Blob
+            ? content
+            : new Blob([content], { type: (mimeType || 'text/plain') + ';charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1500);
+        } catch (e) {
+          console.error('fallback download 失败', e);
+          showToast && showToast('保存失败：' + e.message);
+        }
+      },
+    };
+
+    // Android 保存完成后回调入口（被原生 evaluateJavascript 调用）
+    window.__onAndroidSaveFile = function(status) {
+      // status: 'ok' | 'cancel' | 'error:<msg>'
+      const resolve = SaveFilePicker._nativeResolve;
+      const timer = SaveFilePicker._nativeTimer;
+      SaveFilePicker._nativeResolve = null;
+      if (timer) clearTimeout(timer);
+      SaveFilePicker._nativeTimer = null;
+      if (!resolve) return;
+      if (status === 'ok') resolve('saved');
+      else if (status === 'cancel') resolve('cancelled');
+      else {
+        resolve('cancelled');  // 出错也视作用户取消
+        console.warn('Native save error:', status);
+      }
+    };
+
     const DocManager = {
       docs: [],
       activeId: null,
@@ -3503,6 +4200,15 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           }
         }
 
+        // 清理：旧版本自动注入的"欢迎使用马克档"示例文档
+        if (this.docs.length > 0) {
+          const before = this.docs.length;
+          this.docs = this.docs.filter(d => d.title !== '欢迎使用马克档');
+          if (this.docs.length !== before) {
+            this._persist();
+          }
+        }
+
         // 迁移旧版单文档
         if (this.docs.length === 0) {
           const oldContent = localStorage.getItem(STORAGE_KEYS.content);
@@ -3512,9 +4218,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             localStorage.setItem(STORAGE_KEYS.docs, JSON.stringify(this.docs));
             localStorage.removeItem(STORAGE_KEYS.content);
           } else {
-            // 首次打开 → 加载示例
-            const sample = this._makeDoc('欢迎使用马克档', SAMPLE_DOC);
-            this.docs = [sample];
+            // 首次打开 → 创建一个空白文档（不再自动注入示例）
+            const blank = this._makeDoc('未命名文档', '');
+            this.docs = [blank];
             this._persist();
           }
         }
@@ -3596,6 +4302,11 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           showToast('已切换文档');
           // 多标签同步
           if (typeof MultiTabSync !== 'undefined') MultiTabSync.announceSwitch(docId);
+          // 阅读视图下,Reader 内容是从 _syncToEditor 之前的 preview.innerHTML 拷贝的旧快照。
+          // 需要立即重渲染 Reader,否则用户看到的是旧文档,要切换视图才会刷新。
+          if (typeof Reader !== 'undefined' && Reader.isOpen) {
+            try { Reader._render(); } catch (e) { console.warn('[DocManager.switchTo] Reader._render 失败:', e); }
+          }
         }
       },
 
@@ -3784,7 +4495,9 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             <button class="sheet-item" data-act="rename">✏️ 重命名</button>
             <button class="sheet-item" data-act="duplicate">📋 复制</button>
             <button class="sheet-item" data-act="export-md">⬇️ 导出为 .md</button>
-            <button class="sheet-item" data-act="export-json">⬇️ 导出为 JSON</button>
+            <button class="sheet-item" data-act="export-html">⬇️ 导出为 .html</button>
+            <button class="sheet-item" data-act="export-pdf">⬇️ 导出为 .pdf</button>
+            <button class="sheet-item" data-act="export-docx">⬇️ 导出为 .docx</button>
             <button class="sheet-item" data-act="copy-md">📄 复制内容</button>
             <button class="sheet-item danger" data-act="delete">🗑️ 删除</button>
             <button class="sheet-item cancel" data-act="cancel">取消</button>
@@ -3810,8 +4523,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
             this.duplicate(docId);
           } else if (act === 'export-md') {
             this._exportSingleMd(doc);
-          } else if (act === 'export-json') {
-            this._exportSingleJson(doc);
+          } else if (act === 'export-html') {
+            this._exportSingleHtml(doc);
+          } else if (act === 'export-pdf') {
+            this._exportSinglePdf(doc);
+          } else if (act === 'export-docx') {
+            this._exportSingleDocx(doc);
           } else if (act === 'copy-md') {
             copyToClipboard(doc.content).then(ok => showToast(ok ? '已复制 ✓' : '复制失败'));
           } else if (act === 'delete') {
@@ -3822,44 +4539,627 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
       _exportSingleMd(doc) {
         const fname = doc.title.replace(/[\\/:*?"<>|]/g, '_') + '.md';
-        const blob = new Blob([doc.content], { type: 'text/markdown;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fname;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('已下载 ' + fname);
+        return SaveFilePicker.save({
+          content: doc.content,
+          filename: fname,
+          mimeType: 'text/markdown',
+        });
       },
 
       _exportSingleJson(doc) {
-        const data = JSON.stringify(doc, null, 2);
         const fname = doc.title.replace(/[\\/:*?"<>|]/g, '_') + '.json';
-        const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fname;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('已下载 ' + fname);
+        return SaveFilePicker.save({
+          content: JSON.stringify(doc, null, 2),
+          filename: fname,
+          mimeType: 'application/json',
+        });
       },
 
-      // 导出所有文档为 ZIP 风格 JSON
-      exportAll() {
+      // 渲染单个文档为自包含 HTML（带主题样式 + 数学 + 代码高亮靠引用 vendor）
+      // 简化版:先渲染纯 HTML,代码高亮依赖资源要 vendor 才能用,所以这里用最朴素的渲染
+      // 真实 DOCX (OOXML) 导出 —— 纯 JS 实现，不引入依赖
+      // DOCX = ZIP 容器，包含 [Content_Types].xml / word/document.xml 等 OOXML 文件
+      // 这里用 store(0) 模式打包（不压缩），最简化
+      _exportSingleDocx(doc) {
+        const fname = doc.title.replace(/[\\/:*?"<>|]/g, '_') + '.docx';
+        try {
+          // 1) 把当前文档的 markdown 渲染成 HTML（与 _exportSingleHtml 一致）
+          const mdHtml = (typeof marked !== 'undefined')
+            ? marked.parse(doc.content || '')
+            : this._escapeHtml(doc.content || '');
+          // 2) HTML -> 简易 DOCX（用 inline 标签表达纯文本格式）
+          const escapedTitle = this._escapeXml(doc.title || '未命名文档');
+          const documentXml = this._buildDocxDocumentXml(escapedTitle, doc.title || '未命名文档', mdHtml);
+          // 3) 4 个必备部件
+          const contentTypesXml =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+            '<Default Extension="xml" ContentType="application/xml"/>' +
+            '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+            '</Types>';
+          const relsXml =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>' +
+            '</Relationships>';
+          const wordRelsXml =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>';
+          // 4) Store-only ZIP 打包
+          const files = [
+            { name: '[Content_Types].xml', content: contentTypesXml },
+            { name: '_rels/.rels', content: relsXml },
+            { name: 'word/document.xml', content: documentXml },
+            { name: 'word/_rels/document.xml.rels', content: wordRelsXml },
+          ];
+          const blob = this._buildStoreOnlyZip(files);
+          return SaveFilePicker.save({
+            content: blob,
+            filename: fname,
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          });
+        } catch (e) {
+          console.error('DOCX 生成失败', e);
+          showToast && showToast('DOCX 导出失败：' + e.message);
+          return Promise.resolve('cancelled');
+        }
+      },
+
+      // 把 HTML 转成 Word document.xml（行、段、表格粗略映射）
+      // 简化策略：
+      // - <h1>~h6> → Heading 1~6
+      // - <p> → 普通段落
+      // - <ul>/<ol>/<li> → 列表
+      // - <pre>/<code> → 等宽段落
+      // - <blockquote> → 缩进段落
+      // - 其他内联元素（strong/em/code/a/img/...）→ run formatting
+      // - <table> → 简易表格
+      _buildDocxDocumentXml(escapeTitleForXml, titlePlain, mdHtml) {
+        const xmlEscape = (s) => this._escapeXml(s);
+        // 把 mdHtml 当字符串遍历很容易，我们用 DOMParser
+        let root;
+        try {
+          root = new DOMParser().parseFromString('<div id="root">' + mdHtml + '</div>', 'text/html').body.firstChild;
+        } catch (e) {
+          root = null;
+        }
+
+        // 段落容器：把所有内容转成 Word 段落元素数组（每个都是 <w:p>）
+        const paragraphs = [];
+
+        // 默认段落属性（normal 样式）
+        const paraNormal = (children) =>
+          '<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr>' + (children || '') + '</w:p>';
+
+        const runsFromInline = (text) => {
+          // 处理内联：<strong>/<em>/<code>，文本用 w:r/w:t
+          const t = xmlEscape(text);
+          if (!t) return '';
+          return '<w:r><w:t xml:space="preserve">' + t + '</w:t></w:r>';
+        };
+
+        const makeHeading = (level, text) => {
+          const t = xmlEscape(text);
+          return '<w:p><w:pPr><w:pStyle w:val="Heading' + level + '"/></w:pPr>' +
+            '<w:r><w:t xml:space="preserve">' + t + '</w:t></w:r></w:p>';
+        };
+
+        const makePara = (text) => paraNormal(runsFromInline(text));
+        const makeEmptyPara = () => paraNormal('');
+
+        const traverse = (node) => {
+          if (!node) return;
+          if (node.nodeType === 3) {
+            // text node — 不应该独立成段，由父级处理
+            return;
+          }
+          if (node.nodeType !== 1) return;
+          const tag = node.tagName.toLowerCase();
+
+          if (/^h[1-6]$/.test(tag)) {
+            const level = parseInt(tag[1]);
+            const text = node.textContent || '';
+            paragraphs.push(makeHeading(level, text));
+            return;
+          }
+
+          if (tag === 'p') {
+            // 把 p 内部的 inline 格式化转成 runs
+            paragraphs.push(paraNormal(this._runsFromInlineNode(node)));
+            return;
+          }
+
+          if (tag === 'ul' || tag === 'ol') {
+            const numId = (tag === 'ol') ? 1 : 0;
+            // 没装 numbering.xml 时也能用 numId 占位；Word 会按 fallback 处理
+            // 这里简化为用 indent + bullet
+            Array.from(node.children).forEach(li => {
+              if (li.tagName.toLowerCase() !== 'li') return;
+              // li 内部可能还有嵌套 ul/ol，简单起见只取一层文本
+              const inline = Array.from(li.childNodes)
+                .filter(c => c.nodeType !== 1 || !/^ul$|^ol$/.test(c.tagName.toLowerCase()))
+                .map(c => this._nodeToRun(c))
+                .join('');
+              paragraphs.push(
+                '<w:p><w:pPr><w:pStyle w:val="ListParagraph"/>' +
+                (tag === 'ol' ? '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>' : '') +
+                '</w:pPr>' + inline + '</w:p>'
+              );
+            });
+            return;
+          }
+
+          if (tag === 'pre') {
+            // 整段当代码块（保留所有文本）
+            const text = node.textContent || '';
+            // 按行拆段，每行一个等宽段落（不够精细但 Word 能看）
+            const lines = text.split('\n');
+            lines.forEach(line => {
+              paragraphs.push(
+                '<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr>' +
+                '<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/></w:rPr>' +
+                '<w:t xml:space="preserve">' + xmlEscape(line) + '</w:t></w:r></w:p>'
+              );
+            });
+            return;
+          }
+
+          if (tag === 'blockquote') {
+            Array.from(node.children).forEach(c => traverse(c));
+            return;
+          }
+
+          if (tag === 'hr') {
+            paragraphs.push('<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/></w:pBdr></w:pPr></w:p>');
+            return;
+          }
+
+          if (tag === 'table') {
+            // 简易表格：每行 <w:tr>，每列 <w:tc>，水平边框
+            Array.from(node.children).forEach(tr => {
+              if (tr.tagName.toLowerCase() !== 'tr') return;
+              const cells = Array.from(tr.children).map(td => {
+                if (td.tagName.toLowerCase() !== 'td' && td.tagName.toLowerCase() !== 'th') return '';
+                const cellText = td.textContent || '';
+                return '<w:tc><w:tcPr><w:tcW w:w="0" w:type="auto"/></w:tcPr>' +
+                  '<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr>' +
+                  '<w:r><w:t xml:space="preserve">' + xmlEscape(cellText) + '</w:t></w:r></w:p></w:tc>';
+              }).join('');
+              paragraphs.push('<w:tbl>' +
+                '<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders>' +
+                '<w:top w:val="single" w:sz="4" w:color="auto"/>' +
+                '<w:left w:val="single" w:sz="4" w:color="auto"/>' +
+                '<w:bottom w:val="single" w:sz="4" w:color="auto"/>' +
+                '<w:right w:val="single" w:sz="4" w:color="auto"/>' +
+                '<w:insideH w:val="single" w:sz="4" w:color="auto"/>' +
+                '<w:insideV w:val="single" w:sz="4" w:color="auto"/>' +
+                '</w:tblBorders></w:tblPr>' +
+                '<w:tblGrid></w:tblGrid>' + cells + '</w:tbl>');
+            });
+            return;
+          }
+
+          if (tag === 'img') {
+            // 图片：DOCX 嵌入图片需多文件（media/）较复杂,这里降级成纯文本标记
+            const alt = node.getAttribute('alt') || '';
+            const src = node.getAttribute('src') || '';
+            paragraphs.push(makePara('🖼 ' + alt + (src ? ' (' + src.slice(0, 60) + ')' : '')));
+            return;
+          }
+
+          if (tag === 'div' || tag === 'section' || tag === 'article') {
+            Array.from(node.childNodes).forEach(c => traverse(c));
+            return;
+          }
+
+          // 其他容器或文本：把子节点都遍历
+          Array.from(node.childNodes).forEach(c => traverse(c));
+        };
+
+        if (root) {
+          Array.from(root.childNodes).forEach(c => traverse(c));
+        }
+
+        // 默认 styles.xml：定义常用段落样式（Heading1-6 / Normal / ListParagraph）
+        // styles 必须独立文件，但我们这里 inline 简化：把样式定义放到 document.xml 里 styles 部分
+        const stylesXml = this._buildDocxStylesXml();
+
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+          '<w:wordDocument xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">' +
+          stylesXml +
+          '<w:body>' +
+          makeHeading(1, titlePlain) +
+          paragraphs.join('') +
+          '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>' +
+          '</w:body></w:wordDocument>';
+      },
+
+      // inline 节点 → run xml（按需叠加 w:rPr：bold / italic / code）
+      _runsFromInlineNode(node) {
+        let out = '';
+        Array.from(node.childNodes || []).forEach(c => {
+          out += this._nodeToRun(c);
+        });
+        return out;
+      },
+
+      _nodeToRun(node) {
+        if (!node) return '';
+        if (node.nodeType === 3) return '<w:r><w:t xml:space="preserve">' + this._escapeXml(node.nodeValue || '') + '</w:t></w:r>';
+        if (node.nodeType !== 1) return '';
+        const tag = node.tagName.toLowerCase();
+        const inner = () => this._runsFromInlineNode(node);
+        switch (tag) {
+          case 'strong':
+          case 'b':
+            return '<w:r><w:rPr><w:b/></w:rPr>' + inner() + '</w:r>';
+          case 'em':
+          case 'i':
+            return '<w:r><w:rPr><w:i/></w:rPr>' + inner() + '</w:r>';
+          case 'code':
+            return '<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/><w:color w:val="C7254E"/><w:sz w:val="20"/></w:rPr>' +
+              '<w:t xml:space="preserve">' + this._escapeXml(node.textContent || '') + '</w:t></w:r>';
+          case 'a': {
+            const href = node.getAttribute('href') || '';
+            const text = node.textContent || '';
+            return '<w:r><w:rPr><w:color w:val="0563C1"/><w:u w:val="single"/></w:rPr>' +
+              '<w:t xml:space="preserve">' + this._escapeXml(text) + '</w:t></w:r>' +
+              '<w:r><w:rPr><w:vanish/></w:rPr><w:t xml:space="preserve">(' + this._escapeXml(href) + ')</w:t></w:r>';
+          }
+          case 'br':
+            return '<w:r><w:br/></w:r>';
+          case 'img': {
+            const alt = node.getAttribute('alt') || '';
+            return '<w:r><w:t xml:space="preserve">[' + this._escapeXml(alt) + ']</w:t></w:r>';
+          }
+          case 'span':
+          default:
+            return inner();
+        }
+      },
+
+      _buildDocxStylesXml() {
+        // 内联 styles 片段：只定义我们用到的样式（Heading1-6 / Normal / ListParagraph）
+        return '<w:styles>' +
+          '<w:style w:type="paragraph" w:styleId="Normal" w:default="1"><w:name w:val="Normal"/></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="480" w:after="240"/><w:outlineLvl w:val="0"/></w:pPr>' +
+          '<w:rPr><w:b/><w:sz w:val="44"/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="360" w:after="180"/><w:outlineLvl w:val="1"/></w:pPr>' +
+          '<w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="280" w:after="160"/><w:outlineLvl w:val="2"/></w:pPr>' +
+          '<w:rPr><w:b/><w:sz w:val="30"/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading4"><w:name w:val="heading 4"/><w:basedOn w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="3"/></w:pPr>' +
+          '<w:rPr><w:b/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading5"><w:name w:val="heading 5"/><w:basedOn w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="4"/></w:pPr>' +
+          '<w:rPr><w:b/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="Heading6"><w:name w:val="heading 6"/><w:basedOn w:val="Normal"/>' +
+          '<w:pPr><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="5"/></w:pPr>' +
+          '<w:rPr><w:i/></w:rPr></w:style>' +
+          '<w:style w:type="paragraph" w:styleId="ListParagraph"><w:name w:val="List Paragraph"/><w:basedOn w:val="Normal"/>' +
+          '<w:pPr><w:ind w:left="720"/></w:pPr></w:style>' +
+          '</w:styles>';
+      },
+
+      // XML 转义
+      _escapeXml(s) {
+        return String(s || '').replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
+        }[c]));
+      },
+
+      // CRC32 (IEEE 802.3) 表 + 计算
+      _crc32Table: null,
+      _crc32(bytes) {
+        if (!this._crc32Table) {
+          const t = new Uint32Array(256);
+          for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+            t[i] = c >>> 0;
+          }
+          this._crc32Table = t;
+        }
+        let crc = 0 ^ (-1);
+        for (let i = 0; i < bytes.length; i++) {
+          crc = (crc >>> 8) ^ this._crc32Table[(crc ^ bytes[i]) & 0xFF];
+        }
+        return (crc ^ (-1)) >>> 0;
+      },
+
+      // 把字符串转成 UTF-8 字节数组
+      _strToBytes(str) {
+        return new TextEncoder().encode(str);
+      },
+
+      // DOS 日期/时间（ZIP 用），只用一个固定值即可
+      _dosDateTime() {
+        const d = new Date();
+        const time = ((d.getHours() & 0x1F) << 11) | ((d.getMinutes() & 0x3F) << 5) | ((d.getSeconds() / 2) & 0x1F);
+        const date = (((d.getFullYear() - 1980) & 0x7F) << 9) | (((d.getMonth() + 1) & 0x0F) << 5) | (d.getDate() & 0x1F);
+        return { time, date };
+      },
+
+      // Store-only (无压缩) ZIP 打包
+      // files: [{ name, content (string) }]
+      // 返回 Blob
+      _buildStoreOnlyZip(files) {
+        const enc = new TextEncoder();
+        const dos = this._dosDateTime();
+        const localParts = []; // 每个 local file header + data
+        const centralParts = []; // 每个 central directory header
+        let offset = 0;
+
+        for (const f of files) {
+          const nameBytes = enc.encode(f.name);
+          const dataBytes = enc.encode(f.content);
+          const crc = this._crc32(dataBytes);
+
+          // Local file header (30 + name + extra)
+          const localHeader = new Uint8Array(30 + nameBytes.length);
+          const lv = new DataView(localHeader.buffer);
+          lv.setUint32(0, 0x04034b50, true);   // signature
+          lv.setUint16(4, 20, true);            // version needed
+          lv.setUint16(6, 0x0800, true);        // flags (UTF-8)
+          lv.setUint16(8, 0, true);             // method = 0 (store)
+          lv.setUint16(10, dos.time, true);
+          lv.setUint16(12, dos.date, true);
+          lv.setUint32(14, crc, true);
+          lv.setUint32(18, dataBytes.length, true);  // compressed size
+          lv.setUint32(22, dataBytes.length, true);  // uncompressed size
+          lv.setUint16(26, nameBytes.length, true);
+          lv.setUint16(28, 0, true);            // extra length
+          localHeader.set(nameBytes, 30);
+
+          localParts.push(localHeader, dataBytes);
+
+          // Central directory header (46 + name + extra + comment)
+          const cdHeader = new Uint8Array(46 + nameBytes.length);
+          const cv = new DataView(cdHeader.buffer);
+          cv.setUint32(0, 0x02014b50, true);   // signature
+          cv.setUint16(4, 20, true);            // version made by
+          cv.setUint16(6, 20, true);            // version needed
+          cv.setUint16(8, 0x0800, true);        // flags (UTF-8)
+          cv.setUint16(10, 0, true);            // method = 0
+          cv.setUint16(12, dos.time, true);
+          cv.setUint16(14, dos.date, true);
+          cv.setUint32(16, crc, true);
+          cv.setUint32(20, dataBytes.length, true);
+          cv.setUint32(24, dataBytes.length, true);
+          cv.setUint16(28, nameBytes.length, true);
+          cv.setUint16(30, 0, true);            // extra length
+          cv.setUint16(32, 0, true);            // comment length
+          cv.setUint16(34, 0, true);            // disk number
+          cv.setUint16(36, 0, true);            // internal file attrs
+          cv.setUint32(38, 0, true);            // external file attrs
+          cv.setUint32(42, offset, true);       // local header offset
+          cdHeader.set(nameBytes, 46);
+          centralParts.push(cdHeader);
+
+          offset += localHeader.length + dataBytes.length;
+        }
+
+        // End of central directory (22 bytes + comment)
+        const cdSize = centralParts.reduce((s, p) => s + p.length, 0);
+        const cdOffset = offset;
+        const eocd = new Uint8Array(22);
+        const ev = new DataView(eocd.buffer);
+        ev.setUint32(0, 0x06054b50, true);
+        ev.setUint16(4, 0, true);              // disk number
+        ev.setUint16(6, 0, true);              // start disk
+        ev.setUint16(8, files.length, true);   // entries on this disk
+        ev.setUint16(10, files.length, true);  // total entries
+        ev.setUint32(12, cdSize, true);
+        ev.setUint32(16, cdOffset, true);
+        ev.setUint16(20, 0, true);             // comment length
+
+        // 拼装
+        return new Blob([...localParts, ...centralParts, eocd], {
+          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        });
+      },
+
+      _exportSingleHtml(doc) {
+        const fname = doc.title.replace(/[\\/:*?"<>|]/g, '_') + '.html';
+        // 复用 buildSelfContainedHTML 风格,但需要传入渲染好的元素
+        // 这里直接用 marked 渲染后包装
+        const mdHtml = (typeof marked !== 'undefined') ? marked.parse(doc.content || '') : this._escapeHtml(doc.content || '');
+        const cs = getComputedStyle(document.documentElement);
+        const vars = ['--bg', '--bg-elev', '--bg-soft', '--fg', '--fg-soft', '--fg-muted',
+                      '--border', '--border-strong', '--brand', '--brand-soft', '--code-bg'];
+        const styleVars = vars.map(v => `${v}:${cs.getPropertyValue(v).trim()};`).join('');
+        const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${this._escapeHtml(doc.title)}</title>
+<style>
+body{margin:0;padding:24px;${styleVars}background:var(--bg);color:var(--fg);
+     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;
+     line-height:1.75;font-size:16px;max-width:880px;margin:auto;}
+h1,h2,h3,h4,h5,h6{color:var(--fg);line-height:1.3;margin:1.6em 0 .6em;}
+h1{font-size:1.9em;border-bottom:1px solid var(--border);padding-bottom:.3em;}
+h2{font-size:1.55em;border-bottom:1px solid var(--border);padding-bottom:.25em;}
+p{margin:.8em 0;} a{color:var(--brand);text-decoration:none;}
+code{font-family:"JetBrains Mono","Fira Code","SF Mono",monospace;font-size:.9em;
+     padding:.15em .4em;background:var(--code-bg);color:var(--brand);border-radius:4px;}
+pre{padding:14px 16px;background:var(--code-bg);border-radius:12px;overflow-x:auto;
+    border:1px solid var(--border);}
+pre code{padding:0;background:transparent;color:var(--fg);}
+blockquote{margin:1em 0;padding:.6em 1em;border-left:3px solid var(--brand);
+           background:var(--bg-soft);border-radius:0 8px 8px 0;color:var(--fg-soft);}
+table{width:100%;border-collapse:collapse;margin:1em 0;}
+th,td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;}
+thead{background:var(--bg-soft);} img{max-width:100%;border-radius:12px;}
+hr{border:none;height:1px;background:var(--border);margin:2em 0;}
+.task-list-item{list-style:none;} input[type=checkbox]{margin-right:8px;}
+</style></head><body>${mdHtml}</body></html>`;
+        return SaveFilePicker.save({
+          content: html,
+          filename: fname,
+          mimeType: 'text/html',
+        });
+      },
+
+      // PDF 导出：通过 window.print() 唤起系统打印对话框
+      // 浏览器/Android 系统的打印对话框都有"另存为 PDF"选项，可选保存位置
+      _exportSinglePdf(doc) {
+        // 用单个文档渲染一份 HTML,在新窗口打开并打印
+        const mdHtml = (typeof marked !== 'undefined') ? marked.parse(doc.content || '') : this._escapeHtml(doc.content || '');
+        const printHtml = this._buildPrintableHtml(doc.title, mdHtml);
+        this._openPrintWindow(printHtml);
+      },
+
+      // 多文档合并输出为单个 PDF
+      _exportPdfCombined(docs) {
+        const sections = docs.map((d, i) => {
+          const mdHtml = (typeof marked !== 'undefined') ? marked.parse(d.content || '') : this._escapeHtml(d.content || '');
+          return `<section class="doc${i < docs.length - 1 ? ' page-break' : ''}">
+  <h1 class="doc-title">${this._escapeHtml(d.title)}</h1>
+  <div class="doc-body">${mdHtml}</div>
+</section>`;
+        }).join('\n<hr class="doc-sep">\n');
+        const combinedTitle = docs.length === 1
+          ? docs[0].title
+          : `马克档导出 - ${docs.length} 个文档`;
+        const html = this._buildPrintableHtml(combinedTitle, sections);
+        this._openPrintWindow(html);
+      },
+
+      _buildPrintableHtml(title, bodyHtml) {
+        // 打印友好的 HTML（黑底白字、A4 边距、page-break-after）
+        return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>${this._escapeHtml(title)}</title>
+<style>
+@page { size: A4; margin: 18mm 14mm 18mm 14mm; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #fff;
+  color: #1A1829;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", serif;
+  line-height: 1.7;
+  font-size: 13pt;
+}
+.doc { max-width: 100%; }
+.doc-title {
+  font-size: 22pt;
+  font-weight: 800;
+  margin: 0 0 0.6em;
+  padding-bottom: 0.3em;
+  border-bottom: 1.5pt solid #333;
+}
+.doc h2 { font-size: 16pt; margin: 1.4em 0 0.5em; }
+.doc h3 { font-size: 14pt; margin: 1.2em 0 0.4em; }
+.doc h4, .doc h5, .doc h6 { font-size: 13pt; margin: 1em 0 0.4em; }
+.doc p { margin: 0.7em 0; }
+.doc a { color: #1a73e8; text-decoration: underline; }
+.doc code {
+  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background: #f5f5f5;
+  color: #d6336c;
+  border-radius: 4px;
+}
+.doc pre {
+  padding: 10pt 12pt;
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 10pt;
+  line-height: 1.5;
+}
+.doc pre code { padding: 0; background: transparent; color: #1A1829; }
+.doc blockquote {
+  margin: 1em 0;
+  padding: 0.6em 1em;
+  border-left: 3pt solid #FF5A5F;
+  background: #f8f8f8;
+  color: #555;
+  border-radius: 0 6px 6px 0;
+}
+.doc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 11pt;
+}
+.doc th, .doc td {
+  padding: 8pt 10pt;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+.doc thead { background: #f5f5f5; }
+.doc img { max-width: 100%; border-radius: 6pt; }
+.doc hr { border: none; height: 1px; background: #ddd; margin: 1.6em 0; }
+.doc ul, .doc ol { padding-left: 1.6em; }
+.doc .task-list-item { list-style: none; }
+.header-anchor { display: none; }
+section.page-break, .doc-sep { page-break-after: always; break-after: page; }
+section:last-child { page-break-after: auto; }
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style></head><body><div class="doc">${bodyHtml}</div>
+<scr' + 'ipt>
+// 文档加载完成自动调起打印对话框（用户可在这里选"另存为 PDF"和保存位置）
+window.addEventListener('load', function() {
+  // 等渲染稳定再触发
+  setTimeout(function() {
+    try { window.print(); } catch (e) { console.error(e); }
+  }, 300);
+});
+</scr' + 'ipt>
+</body></html>`;
+      },
+
+      _openPrintWindow(htmlContent) {
+        // 优先用新窗口打开(打印体验最好);被拦截时退到 iframe + 自己的打印
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.open();
+          w.document.write(htmlContent);
+          w.document.close();
+          return;
+        }
+        // popup 被拦 → iframe 模式
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '-9999px';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        iframe.contentDocument && iframe.contentDocument.write && iframe.contentDocument.write(htmlContent);
+        iframe.contentDocument && iframe.contentDocument.close && iframe.contentDocument.close();
+        showToast('浏览器拦截了新窗口,请到系统打印对话框中选择"另存为 PDF"');
+        // iframe 内 window.print 需要 contentWindow
+        setTimeout(() => {
+          try { iframe.contentWindow && iframe.contentWindow.focus() && iframe.contentWindow.print(); }
+          catch (e) { showToast('请通过浏览器菜单选择"打印 / 另存为 PDF"'); }
+        }, 600);
+      },
+
+      // 把选中的文档打包成单个 JSON(兼容 importAll 格式)
+      _exportBundle(ids) {
+        const docs = ids
+          .map(id => this.docs.find(d => d.id === id))
+          .filter(Boolean);
+        if (!docs.length) return Promise.resolve('cancelled');
         const data = {
           version: 1,
           exportedAt: new Date().toISOString(),
-          docs: this.docs,
+          docs,
         };
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `markdoc-backup-${new Date().toISOString().slice(0, 10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showToast('已导出 ' + this.docs.length + ' 个文档');
+        return SaveFilePicker.save({
+          content: JSON.stringify(data, null, 2),
+          filename: `markdoc-export-${new Date().toISOString().slice(0, 10)}-${docs.length}.json`,
+          mimeType: 'application/json',
+        });
       },
 
       // 导入 JSON
@@ -3891,6 +5191,188 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           showToast('导入失败：' + e.message);
           return 0;
         }
+      },
+
+      // 单 .md 文件导入（直接新建一个文档）
+      importMd(text, filename) {
+        const title = (filename || '导入文档').replace(/\.[^.]+$/, '');
+        const fresh = this._makeDoc(title || '导入文档', text || '');
+        this.docs.push(fresh);
+        this._persist();
+        this.renderList();
+        return 1;
+      },
+
+      // 导出 picker：让用户挑具体文档，而不是无脑全量
+      showExportPicker() {
+        if (!this.docs.length) {
+          showToast('还没有文档可导出');
+          return;
+        }
+
+        const sheet = document.createElement('div');
+        sheet.className = 'export-picker';
+        sheet.innerHTML = `
+          <div class="ep-mask"></div>
+          <div class="ep-body" role="dialog" aria-modal="true">
+            <div class="ep-handle"></div>
+            <div class="ep-title">选择要导出的文档</div>
+            <div class="ep-toolbar">
+              <button class="ep-tool" data-tool="all">全选</button>
+              <button class="ep-tool" data-tool="none">全不选</button>
+              <button class="ep-tool" data-tool="invert">反选</button>
+              <div class="ep-sep"></div>
+              <label class="ep-format active" data-fmt="md">.md</label>
+              <label class="ep-format" data-fmt="html">.html</label>
+              <label class="ep-format" data-fmt="pdf">.pdf</label>
+              <label class="ep-format" data-fmt="docx">.docx</label>
+              <label class="ep-format" data-fmt="bundle">打包</label>
+            </div>
+            <div class="ep-hint" id="ep-hint"></div>
+            <div class="ep-list"></div>
+            <div class="ep-footer">
+              <button class="ep-btn ep-cancel">取消</button>
+              <button class="ep-btn ep-confirm">导出 <span class="ep-count">0</span></button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(sheet);
+
+        let selected = new Set(); // 默认 0 选中,用户主动勾选
+        let format = 'md';
+
+        const listEl = sheet.querySelector('.ep-list');
+        const countEl = sheet.querySelector('.ep-count');
+
+        const renderList = () => {
+          const sorted = this.sorted();
+          listEl.innerHTML = sorted.map(d => `
+            <label class="ep-item ${selected.has(d.id) ? 'checked' : ''}" data-id="${d.id}">
+              <input type="checkbox" ${selected.has(d.id) ? 'checked' : ''}>
+              <div class="ep-item-meta">
+                <div class="ep-item-title">${this._escapeHtml(d.title)}</div>
+                <div class="ep-item-sub">${d.wordCount.toLocaleString()} 字 · ${this._formatDate(d.updatedAt)}</div>
+              </div>
+            </label>
+          `).join('');
+          countEl.textContent = selected.size;
+        };
+
+        const close = () => {
+          sheet.classList.remove('show');
+          setTimeout(() => sheet.remove(), 220);
+        };
+
+        // 工具栏
+        sheet.querySelectorAll('.ep-tool').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const all = this.docs.map(d => d.id);
+            const t = btn.dataset.tool;
+            if (t === 'all') selected = new Set(all);
+            else if (t === 'none') selected = new Set();
+            else if (t === 'invert') {
+              const next = new Set();
+              all.forEach(id => { if (!selected.has(id)) next.add(id); });
+              selected = next;
+            }
+            renderList();
+          });
+        });
+
+        // 格式切换
+        sheet.querySelectorAll('.ep-format').forEach(el => {
+          el.addEventListener('click', () => {
+            sheet.querySelectorAll('.ep-format').forEach(x => x.classList.remove('active'));
+            el.classList.add('active');
+            format = el.dataset.fmt;
+          });
+        });
+
+        // checkbox 切换
+        listEl.addEventListener('click', (e) => {
+          const item = e.target.closest('.ep-item');
+          if (!item) return;
+          // 点击整行都触发,包括 checkbox 自身
+          e.preventDefault();
+          const id = item.dataset.id;
+          if (selected.has(id)) selected.delete(id);
+          else selected.add(id);
+          item.classList.toggle('checked');
+          item.querySelector('input').checked = selected.has(id);
+          countEl.textContent = selected.size;
+        });
+
+        // 底部按钮
+        sheet.querySelector('.ep-cancel').addEventListener('click', close);
+        sheet.querySelector('.ep-confirm').addEventListener('click', () => {
+          if (selected.size === 0) {
+            showToast('至少选一个文档');
+            return;
+          }
+          const ids = Array.from(selected);
+          const docs = ids
+            .map(id => this.docs.find(d => d.id === id))
+            .filter(Boolean);
+          if (!docs.length) { close(); return; }
+
+          if (format === 'bundle') {
+            // 打包成单个 JSON
+            this._exportBundle(ids);
+            close();
+            return;
+          }
+
+          if (format === 'pdf') {
+            // PDF：多文档合并到一份打印窗口，一次打印即可（选"另存为 PDF"时可指定位置）
+            this._exportPdfCombined(docs);
+            close();
+            return;
+          }
+
+          if (format === 'docx') {
+            // docx：逐个导出（每篇一个保存对话框）
+            docs.forEach((doc, i) => {
+              setTimeout(() => this._exportSingleDocx(doc), i * 200);
+            });
+            close();
+            return;
+          }
+
+          // md / html：逐个导出（每篇一个保存对话框）
+          // 用 setTimeout 错开，避免浏览器拦截同时多个下载
+          docs.forEach((doc, i) => {
+            setTimeout(() => {
+              if (format === 'md') this._exportSingleMd(doc);
+              else this._exportSingleHtml(doc);
+            }, i * 200);
+          });
+          close();
+        });
+
+        // 顶部提示：当前格式的保存方式
+        const hintEl = sheet.querySelector('#ep-hint');
+        const updateHint = () => {
+          if (!hintEl) return;
+          if (format === 'pdf') {
+            hintEl.textContent = 'PDF 将打开打印对话框，选择"另存为 PDF"即可指定保存位置';
+          } else if (format === 'md' || format === 'html' || format === 'docx') {
+            hintEl.textContent = SaveFilePicker.describe();
+          } else if (format === 'bundle') {
+            hintEl.textContent = SaveFilePicker.describe() + '（打包为单文件）';
+          } else {
+            hintEl.textContent = '';
+          }
+        };
+        // 每次切换格式都更新提示
+        sheet.querySelectorAll('.ep-format').forEach(el => {
+          el.addEventListener('click', updateHint);
+        });
+        updateHint();
+
+        sheet.querySelector('.ep-mask').addEventListener('click', close);
+
+        renderList();
+        requestAnimationFrame(() => sheet.classList.add('show'));
       },
 
       // 统计
@@ -4064,16 +5546,21 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           const files = Array.from(e.dataTransfer.files);
           if (!files.length) return;
 
-          files.forEach(file => {
-            const name = file.name.toLowerCase();
-            if (name.endsWith('.md') || name.endsWith('.markdown') || file.type === 'text/markdown' || file.type === 'text/plain') {
-              this._readMdFile(file);
-            } else if (name.endsWith('.json')) {
-              this._readJsonFile(file);
-            } else {
-              showToast(`不支持的文件类型: ${name}`);
-            }
-          });
+          // 走统一导入(拖拽到文档库场景)
+          if (typeof ImportManager !== 'undefined') {
+            ImportManager.importFiles(files);
+          } else {
+            files.forEach(file => {
+              const name = file.name.toLowerCase();
+              if (name.endsWith('.md') || name.endsWith('.markdown') || file.type === 'text/markdown' || file.type === 'text/plain') {
+                this._readMdFile(file);
+              } else if (name.endsWith('.json')) {
+                this._readJsonFile(file);
+              } else {
+                showToast(`不支持的文件类型: ${name}`);
+              }
+            });
+          }
         });
       },
 
@@ -4361,6 +5848,10 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
         if (btnNew) btnNew.addEventListener('click', () => {
           DocManager.create('未命名文档', '');
           closeDocsPanel();
+          // 新建后自动切回编辑模式,便于直接输入内容
+          if (typeof ViewManager !== 'undefined' && ViewManager.current !== 'edit') {
+            ViewManager.set('edit');
+          }
         });
 
         const btnTemplate = $('btn-doc-template');
@@ -4371,29 +5862,21 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
         const btnExport = $('btn-doc-export');
         if (btnExport) btnExport.addEventListener('click', () => {
-          DocManager.exportAll();
+          DocManager.showExportPicker();
           closeDocsPanel();
         });
 
         const btnImport = $('btn-doc-import');
         if (btnImport) btnImport.addEventListener('click', () => {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = '.json,application/json';
-          input.onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-              const merge = confirm('合并到现有文档？\n\n确定 = 合并（保留现有）\n取消 = 替换（清空现有）');
-              const added = DocManager.importAll(ev.target.result, merge);
-              if (added > 0) showToast(`已导入 ${added} 个文档`);
-              DocManager.renderList();
-            };
-            reader.readAsText(file);
-          };
-          input.click();
           closeDocsPanel();
+          // 走统一调度：原生 → Android.openFilePicker('library')；web → <input type="file">
+          if (typeof ImportManager !== 'undefined' && ImportManager.openPicker) {
+            ImportManager.openPicker('library');
+          } else {
+            const fi = $('file-input');
+            if (fi) fi.dataset.target = 'library';
+            if (fi) fi.click();
+          }
         });
 
         // 拦截 URL 参数（来自 PWA 快捷方式）
@@ -4411,6 +5894,12 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
           const el = $('docs-stats');
           if (el) el.textContent = `${stats.total} 个文档 · ${stats.totalWords.toLocaleString()} 字`;
         }, 1000);
+      },
+
+      // 处理用户从文件选择器选中的文件,逐个按类型分发
+      // 实际逻辑已抽到 ImportManager(顶层工具函数),这里保留钩子以兼容旧调用方
+      _handleImportFiles(files) {
+        return ImportManager.importFiles(files);
       },
     };
 
@@ -5723,25 +7212,29 @@ MIT
           close();
         });
 
-        $('act-download').addEventListener('click', () => {
-          const text = $('editor').value;
-          const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
+        $('act-download').addEventListener('click', async () => {
           const ts = new Date().toISOString().slice(0, 10);
-          a.download = `markdoc-${ts}.md`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          showToast('已下载 .md 文件 ✓');
+          await SaveFilePicker.save({
+            content: $('editor').value,
+            filename: `markdoc-${ts}.md`,
+            mimeType: 'text/markdown',
+          });
+          close();
+        });
+
+        // 下载为 PDF（单文件打印对话框 → 另存为 PDF）
+        const actExportPdf = $('act-download-pdf');
+        if (actExportPdf) actExportPdf.addEventListener('click', () => {
+          // 把当前编辑器内容当一个文档导出 PDF
+          const mdHtml = (typeof marked !== 'undefined') ? marked.parse($('editor').value || '') : '';
+          DocManager._openPrintWindow(DocManager._buildPrintableHtml('马克档导出', mdHtml));
           close();
         });
 
         $('act-import').addEventListener('click', () => {
-          $('file-input').click();
-          close();
+          // 弹 mini picker 让用户选"导入到当前编辑器 / 导入到文档库"
+          // 文档库是马克档的核心,默认推荐"导入到文档库"
+          showImportTargetPicker(close);
         });
 
         $('act-sample').addEventListener('click', () => {
@@ -5770,18 +7263,19 @@ MIT
           if (typeof AIAssistant !== 'undefined') AIAssistant.open();
         });
 
-        // 文件导入
-        $('file-input').addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            ContentManager.set(ev.target.result);
-            showToast(`已导入 ${file.name}`);
-          };
-          reader.onerror = () => showToast('读取失败');
-          reader.readAsText(file);
-          e.target.value = ''; // 重置，允许重复选择同一文件
+        // 文件导入(统一入口:文档库 / 抽屉 / 拖拽 / Native 都触发此 input)
+        $('file-input').addEventListener('change', async (e) => {
+          const target = e.target.dataset.target || 'editor';
+          const files = Array.from(e.target.files || []);
+          e.target.value = ''; // 重置,允许重复选择同一文件
+          e.target.dataset.target = 'editor'; // 恢复默认
+          if (!files.length) return;
+          if (typeof ImportManager === 'undefined') return;
+          if (target === 'library') {
+            await ImportManager.importFiles(files);
+          } else {
+            await ImportManager.importToTarget(files, 'editor');
+          }
         });
 
         // PWA 安装按钮
@@ -6086,12 +7580,49 @@ MIT
 
       // --------------------------------------------------------
       // 1. 暴露导入接口（被原生端调用）
+      //
+      // 接受 (text, filename, target)：
+      // - filename 缺省或非 .json → 走 ContentManager.set 覆盖当前编辑器 (target='editor')
+      //                       → 走 DocManager.importMd 建文档 (target='library')
+      // - filename 以 .json 结尾 → 走 DocManager.importAll 整库导入 (忽略 target, json 永远入库)
+      //
+      // 与 Web 端 ImportManager 行为一致,避免 Native 端把 JSON 备份当 .md
       // --------------------------------------------------------
-      window.importMarkdown = function(text) {
+      window.importMarkdown = function(text, filename, target) {
         try {
-          ContentManager.set(text);
-          showToast('已从原生端导入 ✓');
-          if (window.Android) window.Android.haptic(15);
+          if (window.Android) window.Android.haptic && window.Android.haptic(15);
+          const tg = target === 'library' ? 'library' : 'editor';
+          const isJson = (typeof filename === 'string' && filename.toLowerCase().endsWith('.json'))
+            || (() => {
+                try {
+                  const parsed = JSON.parse(text);
+                  return Array.isArray(parsed) || (parsed && Array.isArray(parsed.docs));
+                } catch (_) { return false; }
+              })();
+          if (isJson) {
+            // JSON 永远进文档库
+            const merge = window.confirm(
+              `从原生端导入 JSON 备份${filename ? '「' + filename + '」' : ''}？\n\n` +
+              `确定 = 合并（保留现有文档）\n` +
+              `取消 = 替换（清空现有文档）`
+            );
+            const added = DocManager.importAll(text, merge);
+            if (added > 0) showToast(`已导入 ${added} 个文档 ✓`);
+            else showToast('未发现文档');
+          } else if (tg === 'library') {
+            // 导入到文档库（不限 md，txt 也算）
+            if (typeof ImportManager !== 'undefined' && ImportManager.importMdText) {
+              ImportManager.importMdText(text || '', filename || '导入文档');
+            } else if (typeof DocManager !== 'undefined') {
+              DocManager.importMd(text || '', filename || '导入文档');
+            }
+          } else {
+            // 默认：覆盖当前编辑器
+            if (typeof ContentManager !== 'undefined') {
+              ContentManager.set(text);
+              showToast('已从原生端导入 ✓');
+            }
+          }
         } catch (e) {
           console.error('导入失败', e);
           showToast('导入失败：' + e.message);
@@ -6141,16 +7672,11 @@ MIT
       }
 
       // --------------------------------------------------------
-      // 4. 改写导入行为：调用原生文件选择器
+      // 4. act-import 行为
+      //    Web 默认实现已经会弹 showImportTargetPicker → ImportManager.openPicker
+      //    原生模式下 ImportManager.openPicker 会自动走 window.Android.openFilePicker(target)
+      //    因此这里不再额外覆盖,避免双绑
       // --------------------------------------------------------
-      const origImportBtn = document.getElementById('act-import');
-      if (origImportBtn) {
-        origImportBtn.onclick = function() {
-          window.Android.openFilePicker();
-          document.getElementById('drawer').classList.remove('show');
-          document.getElementById('drawer-mask').classList.remove('show');
-        };
-      }
 
       // --------------------------------------------------------
       // 5. 在抽屉菜单中追加「分享给朋友」选项（仅原生可见）
