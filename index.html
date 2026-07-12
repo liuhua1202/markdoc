@@ -1381,6 +1381,7 @@
       display: none;
       background: var(--reader-bg, #FDFCF7);
       color: var(--reader-fg, #1A1829);
+      overflow-x: hidden;            /* 防止超长无空格标题/URL/code 撑爆导致整页可横移 */
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -1490,6 +1491,8 @@
       font-family: var(--reader-font-family, -apple-system, sans-serif);
       color: var(--reader-fg, #1A1829);
       letter-spacing: 0.01em;
+      /* 通用:正文里超长 URL / 文件名 / 无空格 token 必须允许折行 */
+      overflow-wrap: anywhere;
     }
 
     /* 阅读模式的标题(由 _render 注入,跟正文 H1 区分) */
@@ -1500,6 +1503,10 @@
       margin: 0 0 0.8em;
       letter-spacing: -0.02em;
       color: var(--reader-fg, #1A1829);
+      /* 长文件名 / 无空格标题强制折行,不再撑出阅读区 */
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      hyphens: auto;
     }
 
     .reader-content h1 {
@@ -5458,9 +5465,26 @@ window.addEventListener('load', function() {
         list.querySelectorAll('.outline-item').forEach(el => {
           el.addEventListener('click', () => {
             const id = el.dataset.id;
-            const target = document.getElementById(id);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // 按当前模式选择真正的滚动容器:edit 走 .preview,reader 走 #reader
+            // 标题 id 在两侧都有(reader content 是从 preview innerHTML 拷贝,id 保留),
+            // 但只有当前可见的那个能被 scrollIntoView 滚到位,另一个被遮挡。
+            const reader = $('reader');
+            const inReader = reader && reader.classList.contains('show');
+            const scrollContainer = inReader ? reader : document.querySelector('.preview');
+            const target = inReader
+              ? document.querySelector(`#reader-content [id="${CSS.escape(id)}"]`)
+              : document.getElementById(id);
+            if (target && scrollContainer) {
+              // 用相对容器的 scrollTo,避免 scrollIntoView 在多层 fixed 容器里选错祖先
+              const ctm = scrollContainer.getBoundingClientRect();
+              const ttm = target.getBoundingClientRect();
+              const delta = ttm.top - ctm.top + scrollContainer.scrollTop;
+              // 顶部留出 navbar + 一点呼吸(各模式 navbar-h 不一样,用 CSS 变量)
+              const NAVBAR_RESERVE = 64;
+              scrollContainer.scrollTo({
+                top: Math.max(0, delta - NAVBAR_RESERVE),
+                behavior: 'smooth',
+              });
               this.close();
             }
           });
