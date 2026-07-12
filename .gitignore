@@ -95,6 +95,16 @@ secrets/
 tmp/
 temp/
 
+# Python / 工具脚本输出
+__pycache__/
+*.pyc
+*.pyo
+**/__pycache__/
+**/icon-preview/         # android-app/tools/preview_icons.py 输出目录
+
+# 构建错误日志
+*.err
+
 # Gradle wrapper 调试残留(jar 解压后产物)
 # 绝对不要在仓库根目录出现这些文件
 /META-INF/

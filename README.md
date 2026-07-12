@@ -104,6 +104,21 @@ open MarkdownPad.xcworkspace
 
 ### 📋 更新日志
 
+#### v1.0.13 (2026-07-12)
+- 🐛 **修复 WebDAV 备份恢复轮询** — 三次重试 + 状态轮询,导出/恢复不再卡死
+- 🐛 **修复 DataBackup IO 阻塞** — 切到后台线程,UI 不再卡顿
+- 🐛 **修复 `<queries>` 缺失** — Android 11+ 包可见性,启动器/拨号器等可被识别
+- 🔒 **mixedContent 收紧** — 资产页默认拒绝明文 HTTP,提升安全
+- 🎨 **新图标系统** — monochrome 自适应层(Android 12+ 主题图标)+ 浅色 splash 加 logo
+- 🧹 **Web/Desktop 瘦身** — `index.html` 减少 ~1100 行重复代码,启动更快
+- 📦 **构建优化** — 重新生成所有 mipmap,体积更小更干净
+
+#### v1.0.11 / v1.0.12 (2026-07-10 / 2026-07-11)
+- 🐛 修复导出 picker 支持多选
+- 🐛 修复导入支持 `.md` 文件
+- ✨ 新增 DOCX 真实 OOXML 导出(Word/WPS 直接打开)
+- ✨ Android SAF 多选导入(`.md` / `.json`)
+
 #### v1.0.10 (2026-07-09)
 - 🗑️ **移除模版功能** — 实用性差,精简 UI
 - 🗑️ **移除 AI 助手** — 使用率低,免去 API 维护负担
@@ -220,6 +235,9 @@ markdown/
 - [x] 文档导出 `.docx` (OOXML) / `.pdf` (打印)
 - [x] Android SAF 多选导入(`.md` / `.json`)
 - [x] 修复"更多"按钮多开抽屉后失效 bug
+- [x] 修复 WebDAV 备份恢复 + DataBackup IO 阻塞
+- [x] 新增 DOCX 导出 + SAF 多选导入
+- [x] 新图标系统(monochrome + splash)
 - [ ] 📝 思维导图(Mindmap)
 - [ ] 🔌 插件系统
 - [ ] 🌐 协同编辑(WebRTC / CRDT)
