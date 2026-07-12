@@ -11,6 +11,33 @@
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
 
+    <!-- 修复 B24: Android 11+ (API 30) 引入 Package Visibility 限制,
+         <queries> 必须在 <manifest> 根下、和 <application> 平级,不能嵌在 application 里。
+         不声明 <queries> 的话 PackageManager.queryIntentActivities 永远返回空。
+         这里声明我们关心的查询,确保 DeviceUtils.getMiuiWebViewPackage() 在
+         Android 11+ 设备上能正常工作,SAF 文件选择器也能被 launch。 -->
+    <queries>
+        <!-- 查询能处理 http/https URL 的应用(用于定位 WebView 提供方) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- 启动 SAF 时需要看到系统文件选择器 -->
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.OPEN_DOCUMENT_TREE" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.CREATE_DOCUMENT" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MarkdownApplication"
         android:allowBackup="true"

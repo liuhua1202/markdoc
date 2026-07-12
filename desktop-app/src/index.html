@@ -1352,222 +1352,6 @@
       line-height: 1.4;
     }
 
-    /* ============================================================
-       AI 助手面板
-       ============================================================ */
-    .ai-panel {
-      position: fixed;
-      inset: 0;
-      z-index: 1100;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .ai-panel .ai-mask {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-    .ai-panel.show .ai-mask { opacity: 1; }
-
-    .ai-panel .ai-body {
-      position: relative;
-      width: 100%;
-      max-width: 640px;
-      height: 90vh;
-      background: var(--bg);
-      border-radius: 24px 24px 0 0;
-      box-shadow: var(--shadow-lg);
-      display: flex;
-      flex-direction: column;
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .ai-panel.show .ai-body { transform: translateY(0); }
-
-    .ai-header {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .ai-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .ai-close {
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: var(--bg-soft);
-      color: var(--fg);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .ai-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .ai-empty {
-      text-align: center;
-      color: var(--fg-muted);
-      padding: 24px 16px;
-      font-size: 14px;
-    }
-    .ai-empty p { margin: 0 0 16px; }
-
-    .ai-presets {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .ai-presets button {
-      padding: 14px 8px;
-      border: 1px solid var(--border);
-      background: var(--bg-soft);
-      color: var(--fg);
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .ai-presets button:active {
-      background: var(--brand-soft);
-      border-color: var(--brand);
-      color: var(--brand);
-      transform: scale(0.98);
-    }
-
-    .ai-msg {
-      max-width: 88%;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 14px;
-      line-height: 1.6;
-      word-break: break-word;
-      animation: aiFadeIn 0.2s ease;
-    }
-    @keyframes aiFadeIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .ai-user {
-      align-self: flex-end;
-      background: var(--brand);
-      color: #fff;
-      border-bottom-right-radius: 4px;
-    }
-    .ai-assistant {
-      align-self: flex-start;
-      background: var(--bg-soft);
-      color: var(--fg);
-      border-bottom-left-radius: 4px;
-    }
-    .ai-assistant pre {
-      background: var(--code-bg);
-      padding: 8px 12px;
-      border-radius: 8px;
-      overflow-x: auto;
-      font-size: 12px;
-      margin: 8px 0;
-    }
-    .ai-assistant code {
-      background: var(--code-bg);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-    .ai-assistant p { margin: 6px 0; }
-    .ai-assistant p:first-child { margin-top: 0; }
-    .ai-assistant p:last-child { margin-bottom: 0; }
-
-    .ai-thinking {
-      align-self: flex-start;
-      background: var(--bg-soft);
-      color: var(--fg-muted);
-      font-style: italic;
-    }
-
-    .ai-error {
-      align-self: flex-start;
-      background: rgba(231, 76, 60, 0.1);
-      color: #E74C3C;
-      border: 1px solid rgba(231, 76, 60, 0.3);
-      font-size: 13px;
-    }
-
-    .ai-input-wrap {
-      flex-shrink: 0;
-      display: flex;
-      gap: 8px;
-      padding: 12px 20px;
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .ai-input {
-      flex: 1;
-      min-height: 40px;
-      max-height: 100px;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--bg-soft);
-      color: var(--fg);
-      font-size: 14px;
-      font-family: inherit;
-      outline: none;
-      resize: none;
-    }
-    .ai-input:focus { border-color: var(--brand); }
-
-    .ai-send {
-      padding: 0 18px;
-      height: 40px;
-      background: var(--brand);
-      color: #fff;
-      border: none;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      align-self: flex-end;
-    }
-    .ai-send:active { transform: scale(0.95); }
-    .ai-send:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .ai-footer {
-      flex-shrink: 0;
-      display: flex;
-      gap: 8px;
-      padding: 0 20px 12px;
-      font-size: 11px;
-    }
-    .ai-mini {
-      padding: 4px 10px;
-      border: none;
-      background: transparent;
-      color: var(--fg-muted);
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 11px;
-    }
-    .ai-mini:hover { background: var(--bg-soft); color: var(--fg); }
-
     /* Mermaid 容器 */
     .mermaid-container {
       text-align: center;
@@ -2092,7 +1876,7 @@
       .navbar, .pane-header, .divider, .status-bar,
       #splash, .drawer-mask, .drawer, .docs-mask, .docs-panel,
       .outline-mask, .outline-panel, #find-panel,
-      .ai-panel, .doc-action-sheet, .toast, .docs-footer,
+      .doc-action-sheet, .toast, .docs-footer,
       #editor, .drag-overlay, .web-debug-overlay {
         display: none !important;
       }
@@ -2323,10 +2107,6 @@
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           导入
         </button>
-        <button class="btn-secondary" id="btn-doc-template" title="从模板新建">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-          模板
-        </button>
         <button class="btn-primary" id="btn-doc-new">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           新建
@@ -2455,22 +2235,6 @@
           <span class="meta">
             <span class="label">清空编辑器</span>
             <span class="desc">清空当前所有内容</span>
-          </span>
-        </button>
-      </li>
-
-      <li>
-        <button class="drawer-item" id="act-ai">
-          <span class="icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 8V4H8"/>
-              <rect width="16" height="12" x="4" y="8" rx="2"/>
-              <path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
-            </svg>
-          </span>
-          <span class="meta">
-            <span class="label">AI 助手</span>
-            <span class="desc">总结 / 翻译 / 续写 / 修语法</span>
           </span>
         </button>
       </li>
@@ -2650,8 +2414,7 @@ def fibonacci(n):
 2. **双击 R 键** 进入沉浸式阅读模式
 3. 点击 **🌗** 切换浅色 / 深色 / 跟随系统
 4. 点击 **⋯** 导出 / 导入 / 清空
-5. 点击 **🤖** 体验 AI 助手
-6. 点击 **📑** 查看文档大纲
+5. 点击 **📑** 查看文档大纲
 
 ---
 
@@ -2683,12 +2446,12 @@ const greet = async (name) => {
 
 \`\`\`mermaid
 graph TD
-    A[用户输入] --> B{有 AI 配置?}
-    B -->|是| C[调用 AI API]
-    B -->|否| D[提示配置]
-    C --> E[渲染结果]
-    D --> E
-    E --> F[保存到文档]
+    A[开始] --> B{编辑器输入}
+    B --> C[实时渲染]
+    C --> D{切换视图?}
+    D -->|是| E[阅读模式]
+    D -->|否| F[继续编辑]
+    E --> F
 \`\`\`
 
 ---
@@ -2705,15 +2468,14 @@ $$\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}$$
 
 ---
 
-## 🤖 AI 助手能力
+## ☁️ 云同步（可选）
 
-打开抽屉菜单 → **AI 助手**，可一键：
-- 📝 **总结当前文档** - 自动提炼 3-5 个要点
-- 🌐 **翻译为中文** - 保留 Markdown 结构
-- ✍️ **续写** - 延续你的写作风格
-- 🔧 **修正语法** - 检查错别字和标点
+打开抽屉菜单 → **云同步 (WebDAV)**，可一键绑定坚果云 / Nextcloud / NAS：
+- 🔄 双向同步 - 多设备无缝衔接
+- 📦 增量传输 - 仅同步变更部分
+- 🔐 端到端安全 - 凭据仅存本地
 
-支持 OpenAI / DeepSeek / 智谱 / Ollama / 自定义 API。
+支持坚果云（推荐，国内访问快）/ Nextcloud / 群晖 / 任何 WebDAV 服务。
 
 ---
 
@@ -5405,112 +5167,6 @@ window.addEventListener('load', function() {
     }
 
     // ----------------------------------------------------------
-    // 模板选择器
-    // ----------------------------------------------------------
-    function showTemplatePicker() {
-      // 移除旧的
-      const existing = document.getElementById('template-picker');
-      if (existing) existing.remove();
-
-      const style = document.createElement('style');
-      style.textContent = `
-        #template-picker {
-          position: fixed; inset: 0; z-index: 1100;
-          display: flex; align-items: flex-end; justify-content: center;
-        }
-        #template-picker .tp-mask {
-          position: absolute; inset: 0;
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(4px);
-          opacity: 0; transition: opacity 0.25s ease;
-        }
-        #template-picker.show .tp-mask { opacity: 1; }
-        #template-picker .tp-body {
-          position: relative;
-          width: 100%; max-width: 640px;
-          background: var(--bg);
-          border-radius: 24px 24px 0 0;
-          box-shadow: var(--shadow-lg);
-          padding: 12px 16px calc(env(safe-area-inset-bottom) + 16px);
-          max-height: 80vh;
-          overflow-y: auto;
-          transform: translateY(100%);
-          transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-        }
-        #template-picker.show .tp-body { transform: translateY(0); }
-        .tp-handle {
-          width: 36px; height: 4px;
-          background: var(--border-strong);
-          border-radius: 2px;
-          margin: 0 auto 12px;
-        }
-        .tp-title {
-          font-size: 17px; font-weight: 700;
-          margin: 0 0 16px;
-          padding: 0 4px;
-        }
-        .tp-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 12px;
-        }
-        .tp-item {
-          padding: 16px;
-          background: var(--bg-soft);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          text-align: left;
-        }
-        .tp-item:hover, .tp-item:active {
-          background: var(--brand-soft);
-          border-color: var(--brand);
-          transform: translateY(-2px);
-        }
-        .tp-icon { font-size: 32px; margin-bottom: 8px; }
-        .tp-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-        .tp-desc { font-size: 11px; color: var(--fg-muted); }
-      `;
-      document.head.appendChild(style);
-
-      const picker = document.createElement('div');
-      picker.id = 'template-picker';
-      picker.innerHTML = `
-        <div class="tp-mask"></div>
-        <div class="tp-body">
-          <div class="tp-handle"></div>
-          <h2 class="tp-title">📋 选择模板</h2>
-          <div class="tp-grid">
-            ${Templates.getAll().map(t => `
-              <button class="tp-item" data-tpl="${t.id}">
-                <div class="tp-icon">${t.icon}</div>
-                <div class="tp-name">${t.name}</div>
-                <div class="tp-desc">${t.desc}</div>
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      document.body.appendChild(picker);
-      requestAnimationFrame(() => picker.classList.add('show'));
-
-      const close = () => {
-        picker.classList.remove('show');
-        setTimeout(() => picker.remove(), 300);
-      };
-
-      picker.querySelector('.tp-mask').addEventListener('click', close);
-      picker.querySelectorAll('.tp-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const id = btn.dataset.tpl;
-          Templates.apply(id);
-          close();
-        });
-      });
-    }
-
-    // ----------------------------------------------------------
     // ----------------------------------------------------------
     // 8.55 DragDrop - 拖拽文件支持
     // ----------------------------------------------------------
@@ -5653,12 +5309,8 @@ window.addEventListener('load', function() {
         if (!this.panel) this._create();
         this._refresh();
         // 互斥:打开大纲时关闭抽屉(更多菜单),两边不能同时显示
-        const drawer = document.getElementById('drawer');
-        const drawerMask = document.getElementById('drawer-mask');
-        if (drawer && drawer.classList.contains('show')) {
-          drawer.classList.remove('show');
-          if (drawerMask) drawerMask.classList.remove('show');
-        }
+        // 用 Drawer.close() 同步内部 isOpen 状态,避免后续再点"更多"按钮因状态不一致而早返回失效
+        if (typeof Drawer !== 'undefined' && Drawer.isOpen) Drawer.close();
         this.panel.classList.add('show');
       },
 
@@ -5852,12 +5504,6 @@ window.addEventListener('load', function() {
           if (typeof ViewManager !== 'undefined' && ViewManager.current !== 'edit') {
             ViewManager.set('edit');
           }
-        });
-
-        const btnTemplate = $('btn-doc-template');
-        if (btnTemplate) btnTemplate.addEventListener('click', () => {
-          showTemplatePicker();
-          closeDocsPanel();
         });
 
         const btnExport = $('btn-doc-export');
@@ -6334,582 +5980,6 @@ window.addEventListener('load', function() {
     };
 
     // ----------------------------------------------------------
-    // 8.6.6 Templates - 文档模板库
-    // ----------------------------------------------------------
-    const Templates = {
-      list: [
-        {
-          id: 'blank',
-          name: '空白文档',
-          icon: '📄',
-          desc: '从零开始',
-          content: '',
-        },
-        {
-          id: 'meeting',
-          name: '会议纪要',
-          icon: '📝',
-          desc: '记录会议要点和待办',
-          content: `# 会议纪要
-
-**日期**：${new Date().toISOString().slice(0, 10)}
-**参与人**：
-
-## 议题
-
-### 1. 
-
-- 
-
-## 决策
-
-- 
-
-## 待办事项
-
-- [ ] 
-- [ ] 
-
-## 下次会议
-
-`,
-        },
-        {
-          id: 'blog',
-          name: '博客文章',
-          icon: '✍️',
-          desc: '技术博客 / 随笔',
-          content: `# 标题
-
-> 副标题 / 一句话总结
-
-## 引言
-
-## 正文
-
-## 总结
-
----
-
-**作者**：[你的名字]
-**发布时间**：${new Date().toISOString().slice(0, 10)}
-`,
-        },
-        {
-          id: 'readme',
-          name: 'README',
-          icon: '📚',
-          desc: '项目说明文档',
-          content: `# 项目名称
-
-> 一句话描述这个项目
-
-## ✨ 特性
-
-- 
-- 
-
-## 🚀 快速开始
-
-### 环境要求
-
-### 安装
-
-\`\`\`bash
-# 安装命令
-\`\`\`
-
-### 运行
-
-\`\`\`bash
-# 运行命令
-\`\`\`
-
-## 📖 使用说明
-
-## 🤝 贡献
-
-欢迎 PR！
-
-## 📜 许可
-
-MIT
-`,
-        },
-        {
-          id: 'todo',
-          name: '待办清单',
-          icon: '✅',
-          desc: '任务管理',
-          content: `# 待办清单
-
-## 今日
-
-- [ ] 
-
-## 本周
-
-- [ ] 
-
-## 长期
-
-- [ ] 
-
----
-
-💡 提示：用 ⌘/Ctrl + S 保存
-`,
-        },
-        {
-          id: 'daily',
-          name: '日记',
-          icon: '📅',
-          desc: '每日记录',
-          content: `# ${new Date().toISOString().slice(0, 10)}
-
-## 今日要事
-
-1. 
-2. 
-3. 
-
-## 心情
-
-## 学到了
-
-## 明天
-
-`,
-        },
-        {
-          id: 'resume',
-          name: '简历',
-          icon: '💼',
-          desc: '个人简历',
-          content: `# 张三
-
-📧 zhang.san@example.com | 📱 138-xxxx-xxxx | 🔗 github.com/zhangsan
-
----
-
-## 🎯 个人简介
-
-3 年前端开发经验，专注 Web 性能优化和 React 生态。
-
-## 💼 工作经历
-
-### ABC 公司 (2023 - 至今)
-**高级前端工程师**
-
-- 
-
-### XYZ 公司 (2021 - 2023)
-**前端工程师**
-
-- 
-
-## 🎓 教育背景
-
-- **北京大学** | 计算机科学 | 2017 - 2021
-
-## 🛠 技能
-
-- **语言**: JavaScript / TypeScript / Python
-- **框架**: React / Vue / Next.js
-- **工具**: Webpack / Vite / Git
-
-## 🚀 项目经验
-
-### 项目一
-- 
-
-### 项目二
-- 
-`,
-        },
-        {
-          id: 'welcome',
-          name: '欢迎使用马克档',
-          icon: '👋',
-          desc: '示例文档（带所有特性）',
-          content: null, // 特殊：使用 SAMPLE_DOC
-        },
-      ],
-
-      get(id) {
-        return this.list.find(t => t.id === id);
-      },
-
-      getAll() {
-        return this.list;
-      },
-
-      apply(id) {
-        const tpl = this.get(id);
-        if (!tpl) return null;
-        const content = tpl.id === 'welcome' ? SAMPLE_DOC : tpl.content;
-        return DocManager.create(tpl.name, content);
-      },
-    };
-
-    // ----------------------------------------------------------
-    // 8.7 AIAssistant - AI 助手（OpenAI 兼容协议）
-    //
-    // 支持任意 OpenAI Chat Completions 兼容的服务：
-    // - OpenAI:  https://api.openai.com/v1
-    // - DeepSeek: https://api.deepseek.com/v1
-    // - 智谱 GLM: https://open.bigmodel.cn/api/paas/v4
-    // - Ollama:  http://localhost:11434/v1 (本地)
-    // - 月之暗面: https://api.moonshot.cn/v1
-    // - 自建 OpenAI 兼容服务（vLLM / LM Studio / etc.）
-    //
-    // 命令：
-    // - /summarize   总结当前文档
-    // - /translate   翻译当前文档（自动检测源语言 → 中文）
-    // - /continue    续写
-    // - /fix         修正语法/拼写
-    // - /explain     解释选中内容
-    // - 自定义 prompt
-    // ----------------------------------------------------------
-    const AIAssistant = {
-      config: null,
-      history: [],   // 对话历史 [{role, content}]
-      loading: false,
-
-      init() {
-        const raw = localStorage.getItem('markdoc.aiConfig.v1');
-        if (raw) {
-          try { this.config = JSON.parse(raw); } catch (_) {}
-        }
-      },
-
-      isConfigured() {
-        return !!(this.config && this.config.endpoint && this.config.apiKey && this.config.model);
-      },
-
-      saveConfig(cfg) {
-        this.config = cfg;
-        localStorage.setItem('markdoc.aiConfig.v1', JSON.stringify(cfg));
-      },
-
-      clearConfig() {
-        this.config = null;
-        localStorage.removeItem('markdoc.aiConfig.v1');
-        this.history = [];
-      },
-
-      async chat(userMessage, opts = {}) {
-        if (!this.isConfigured()) throw new Error('请先在抽屉菜单 → AI 助手 配置 API');
-        if (this.loading) throw new Error('AI 正在响应中');
-
-        this.loading = true;
-        try {
-          const systemPrompt = opts.systemPrompt ||
-            `你是马克档 Markdown 阅读器内置的 AI 助手。请用中文回复，除非用户用其他语言提问。简洁、有帮助、Markdown 友好。`;
-
-          const messages = [
-            { role: 'system', content: systemPrompt },
-            ...this.history.slice(-10),
-            { role: 'user', content: userMessage },
-          ];
-
-          if (opts.context) {
-            messages.splice(1, 0, {
-              role: 'system',
-              content: `当前文档内容（参考用）：\n\n${opts.context.slice(0, 4000)}`,
-            });
-          }
-
-          const url = this.config.endpoint.replace(/\/+$/, '') + '/chat/completions';
-          const resp = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + this.config.apiKey,
-            },
-            body: JSON.stringify({
-              model: this.config.model,
-              messages,
-              temperature: opts.temperature ?? 0.7,
-              max_tokens: opts.max_tokens ?? 2000,
-              stream: false,
-            }),
-          });
-
-          if (!resp.ok) {
-            const errText = await resp.text();
-            throw new Error(`AI 返回 ${resp.status}: ${errText.slice(0, 200)}`);
-          }
-
-          const data = await resp.json();
-          const reply = data.choices?.[0]?.message?.content || '';
-          if (!reply) throw new Error('AI 返回为空');
-
-          this.history.push({ role: 'user', content: userMessage });
-          this.history.push({ role: 'assistant', content: reply });
-          if (this.history.length > 20) {
-            this.history = this.history.slice(-20);
-          }
-
-          return reply;
-        } finally {
-          this.loading = false;
-        }
-      },
-
-      async summarize(text) {
-        return this.chat('请用中文总结以下 Markdown 文档的核心内容，3-5 个要点，使用 Markdown 列表格式。', {
-          systemPrompt: '你是一个擅长总结文档的助手。',
-          context: text,
-        });
-      },
-
-      async translate(text, target = '中文') {
-        return this.chat(`请将以下内容翻译成${target}，保留 Markdown 格式。如果原文已经是${target}，请回复"已是${target}"。`, {
-          systemPrompt: '你是一个翻译专家，保留 Markdown 语法、代码块、链接等格式。',
-          context: text,
-        });
-      },
-
-      async continue_(text) {
-        return this.chat('请基于以下内容自然地续写，保持风格一致，300 字以内。', {
-          systemPrompt: '你是一个写作助手，擅长延续作者的思路。',
-          context: text,
-        });
-      },
-
-      async fixGrammar(text) {
-        return this.chat('请检查以下 Markdown 文档的语法错误、错别字、标点问题，输出修正后的版本（保留 Markdown 结构）。如果没有错误，回复"✓ 没有发现问题"。', {
-          systemPrompt: '你是一个严谨的文字编辑。',
-          context: text,
-        });
-      },
-
-      showConfigDialog() {
-        const cfg = this.config || {};
-        const presets = {
-          'DeepSeek':     { endpoint: 'https://api.deepseek.com/v1',                model: 'deepseek-chat' },
-          'OpenAI':       { endpoint: 'https://api.openai.com/v1',                  model: 'gpt-4o-mini' },
-          '智谱 GLM':     { endpoint: 'https://open.bigmodel.cn/api/paas/v4',      model: 'glm-4-flash' },
-          '月之暗面':     { endpoint: 'https://api.moonshot.cn/v1',                 model: 'moonshot-v1-8k' },
-          'Ollama (本地)': { endpoint: 'http://localhost:11434/v1',                model: 'qwen2.5:7b' },
-          '自定义':       { endpoint: '',                                          model: '' },
-        };
-        const presetNames = Object.keys(presets).join(' | ');
-        const preset = prompt(`选择 AI 服务预设：\n${presetNames}\n\n输入名称（"自定义"则手动填）：`, 'DeepSeek');
-        if (!preset) return;
-        if (!presets[preset]) {
-          showToast('无效预设');
-          return;
-        }
-        let endpoint = cfg.endpoint || presets[preset].endpoint;
-        let model = cfg.model || presets[preset].model;
-        if (preset === '自定义') {
-          endpoint = prompt('API endpoint（不含 /chat/completions）：', endpoint) || '';
-          if (!endpoint) return;
-          model = prompt('模型名称：', model) || '';
-          if (!model) return;
-        } else {
-          if (!cfg.endpoint) endpoint = presets[preset].endpoint;
-          if (!cfg.model) model = presets[preset].model;
-        }
-        const apiKey = prompt(`API Key（${preset}）：`, cfg.apiKey || '');
-        if (!apiKey) return;
-
-        this.saveConfig({ endpoint, apiKey, model, preset });
-
-        this.chat('你好，请用一句话自我介绍。', { max_tokens: 200 })
-          .then(reply => {
-            showToast(`✓ AI 已连接：${reply.slice(0, 30)}`);
-          })
-          .catch(err => showToast('连接失败：' + err.message));
-      },
-
-      open() {
-        if (!this.isConfigured()) {
-          if (confirm('AI 助手未配置。\n\n现在配置？\n（也可以选择跳过）')) {
-            this.showConfigDialog();
-            return;
-          }
-        }
-        this.showChatPanel();
-      },
-
-      showChatPanel() {
-        const existing = document.getElementById('ai-panel');
-        if (existing) existing.remove();
-
-        const panel = document.createElement('div');
-        panel.id = 'ai-panel';
-        panel.className = 'ai-panel';
-        panel.innerHTML = `
-          <div class="ai-mask"></div>
-          <div class="ai-body">
-            <div class="ai-header">
-              <span class="ai-title">🤖 AI 助手 <small style="color:var(--fg-muted);font-weight:400;font-size:11px;">${this.config?.preset || ''} · ${this.config?.model || ''}</small></span>
-              <button class="ai-close">✕</button>
-            </div>
-            <div class="ai-messages" id="ai-messages">
-              ${this.history.length === 0 ? `
-                <div class="ai-empty">
-                  <p>👋 你好！选一个操作开始：</p>
-                  <div class="ai-presets">
-                    <button data-cmd="summarize">📝 总结当前文档</button>
-                    <button data-cmd="translate">🌐 翻译为中文</button>
-                    <button data-cmd="continue">✍️ 续写</button>
-                    <button data-cmd="fix">🔧 修正语法</button>
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-            <div class="ai-input-wrap">
-              <textarea class="ai-input" id="ai-input" placeholder="问点什么... (Shift+Enter 换行)"></textarea>
-              <button class="ai-send" id="ai-send">发送</button>
-            </div>
-            <div class="ai-footer">
-              <button class="ai-mini" data-cmd="config">⚙️ 配置</button>
-              <button class="ai-mini" data-cmd="clear">🗑️ 清空对话</button>
-              <button class="ai-mini" data-cmd="reconfig">🔄 重新配置</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(panel);
-        requestAnimationFrame(() => panel.classList.add('show'));
-
-        const close = () => {
-          panel.classList.remove('show');
-          setTimeout(() => panel.remove(), 250);
-        };
-
-        panel.querySelector('.ai-mask').addEventListener('click', close);
-        panel.querySelector('.ai-close').addEventListener('click', close);
-        panel.querySelectorAll('[data-cmd]').forEach(btn => {
-          btn.addEventListener('click', () => this.handleCommand(btn.dataset.cmd, close));
-        });
-
-        const send = async () => {
-          const input = panel.querySelector('#ai-input');
-          const msg = input.value.trim();
-          if (!msg || this.loading) return;
-          input.value = '';
-          this.appendMessage('user', msg);
-          await this.askAI(msg);
-        };
-        panel.querySelector('#ai-send').addEventListener('click', send);
-        panel.querySelector('#ai-input').addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            send();
-          }
-        });
-
-        const messages = panel.querySelector('#ai-messages');
-        messages.scrollTop = messages.scrollHeight;
-      },
-
-      async handleCommand(cmd) {
-        if (cmd === 'config' || cmd === 'reconfig') {
-          this.showConfigDialog();
-          return;
-        }
-        if (cmd === 'clear') {
-          this.history = [];
-          const messages = document.querySelector('#ai-messages');
-          if (messages) messages.innerHTML = `<div class="ai-empty"><p>对话已清空。</p></div>`;
-          return;
-        }
-        if (!this.isConfigured()) {
-          showToast('请先配置 AI');
-          return;
-        }
-
-        const editor = document.getElementById('editor');
-        const text = editor ? editor.value : '';
-
-        let promise;
-        let userLabel = '';
-        switch (cmd) {
-          case 'summarize':
-            userLabel = '📝 总结当前文档';
-            promise = this.summarize(text);
-            break;
-          case 'translate':
-            userLabel = '🌐 翻译为中文';
-            promise = this.translate(text, '中文');
-            break;
-          case 'continue':
-            userLabel = '✍️ 续写';
-            promise = this.continue_(text);
-            break;
-          case 'fix':
-            userLabel = '🔧 修正语法';
-            promise = this.fixGrammar(text);
-            break;
-          default: return;
-        }
-
-        this.appendMessage('user', userLabel);
-        await this.askAI('', promise);
-      },
-
-      async askAI(userMsg, prebuiltPromise) {
-        if (!this.isConfigured()) {
-          showToast('请先配置 AI');
-          return;
-        }
-        const messages = document.getElementById('ai-messages');
-        const thinking = document.createElement('div');
-        thinking.className = 'ai-msg ai-thinking';
-        thinking.textContent = '🤔 思考中...';
-        messages.appendChild(thinking);
-        messages.scrollTop = messages.scrollHeight;
-
-        try {
-          const reply = prebuiltPromise || await this.chat(userMsg, {
-            context: document.getElementById('editor')?.value || '',
-          });
-          thinking.remove();
-          this.appendMessage('assistant', reply);
-          if (userMsg && !prebuiltPromise) {
-            this.history.push({ role: 'user', content: userMsg });
-            this.history.push({ role: 'assistant', content: reply });
-          }
-        } catch (e) {
-          thinking.remove();
-          this.appendMessage('error', '❌ ' + e.message);
-        }
-      },
-
-      appendMessage(role, text) {
-        const messages = document.getElementById('ai-messages');
-        if (!messages) return;
-        const empty = messages.querySelector('.ai-empty');
-        if (empty) empty.remove();
-
-        const div = document.createElement('div');
-        div.className = `ai-msg ai-${role}`;
-        if (role === 'user') {
-          div.textContent = text;
-        } else {
-          try {
-            if (typeof marked !== 'undefined') {
-              div.innerHTML = marked.parse(text);
-            } else {
-              div.textContent = text;
-            }
-            if (typeof hljs !== 'undefined') {
-              div.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
-            }
-          } catch (_) {
-            div.textContent = text;
-          }
-        }
-        messages.appendChild(div);
-        messages.scrollTop = messages.scrollHeight;
-      },
-    };
-
-    // ----------------------------------------------------------
     // 8.7 SyncManager - WebDAV 云同步
     //
     // 支持 WebDAV 协议的网盘：
@@ -7166,50 +6236,64 @@ MIT
     // 9. 抽屉菜单
     // ----------------------------------------------------------
     const Drawer = {
-      init() {
-        const drawer = $('drawer');
-        const mask = $('drawer-mask');
+      // 实例状态 —— 暴露给 Outline / 其他模块互斥调用,同步 isOpen
+      drawer: null,
+      mask: null,
+      isOpen: false,
 
-        // 用单一标志统一开关,防止 Android WebView 偶发重放 click 导致开-关-开
-        let isOpen = false;
-        const setOpen = (next) => {
-          if (isOpen === next) return;
-          isOpen = next;
-          drawer.classList.toggle('show', next);
-          mask.classList.toggle('show', next);
-        };
-        const open = () => {
-          // 互斥:打开抽屉时关闭大纲,两边不能同时显示
-          const outline = document.querySelector('.outline-panel');
-          const outlineMask = document.querySelector('.outline-mask');
-          if (outline && outline.classList.contains('show')) {
-            outline.classList.remove('show');
-            if (outlineMask) outlineMask.classList.remove('show');
-          }
-          setOpen(true);
-        };
-        // close 只在点击的是 mask 本体(非冒泡自 drawer)时关闭
-        const close = (e) => { if (!e || e.target === mask) setOpen(false); };
+      // 用单一标志统一开关,防止 Android WebView 偶发重放 click 导致开-关-开
+      setOpen(next) {
+        if (this.isOpen === next) return;
+        this.isOpen = next;
+        this.drawer.classList.toggle('show', next);
+        this.mask.classList.toggle('show', next);
+      },
+
+      open() {
+        // 互斥:打开抽屉时关闭大纲,两边不能同时显示
+        const outline = document.querySelector('.outline-panel');
+        const outlineMask = document.querySelector('.outline-mask');
+        if (outline && outline.classList.contains('show')) {
+          outline.classList.remove('show');
+          if (outlineMask) outlineMask.classList.remove('show');
+        }
+        this.setOpen(true);
+      },
+
+      // 公共 close：直接同步状态(用于外部互斥/按钮操作时强制关闭)
+      close() {
+        this.setOpen(false);
+      },
+
+      init() {
+        this.drawer = $('drawer');
+        this.mask = $('drawer-mask');
+        this.isOpen = false;
+
+        const mask = this.mask;
 
         $('more-btn').addEventListener('click', (e) => {
           // 防止冒泡干扰其他监听器(MIUI WebView 已知问题)
           e.stopPropagation();
-          open();
+          this.open();
         });
-        mask.addEventListener('click', close);
+        // close 只在点击的是 mask 本体(非冒泡自 drawer)时关闭
+        mask.addEventListener('click', (e) => {
+          if (e.target === mask) this.close();
+        });
 
         // 操作绑定
         $('act-copy-html').addEventListener('click', async () => {
           const html = buildSelfContainedHTML($('preview-content'));
           const ok = await copyToClipboard(html);
           showToast(ok ? '已复制 HTML ✓' : '复制失败');
-          close();
+          this.close();
         });
 
         $('act-copy-md').addEventListener('click', async () => {
           const ok = await copyToClipboard($('editor').value);
           showToast(ok ? '已复制 Markdown ✓' : '复制失败');
-          close();
+          this.close();
         });
 
         $('act-download').addEventListener('click', async () => {
@@ -7219,7 +6303,7 @@ MIT
             filename: `markdoc-${ts}.md`,
             mimeType: 'text/markdown',
           });
-          close();
+          this.close();
         });
 
         // 下载为 PDF（单文件打印对话框 → 另存为 PDF）
@@ -7228,39 +6312,34 @@ MIT
           // 把当前编辑器内容当一个文档导出 PDF
           const mdHtml = (typeof marked !== 'undefined') ? marked.parse($('editor').value || '') : '';
           DocManager._openPrintWindow(DocManager._buildPrintableHtml('马克档导出', mdHtml));
-          close();
+          this.close();
         });
 
         $('act-import').addEventListener('click', () => {
           // 弹 mini picker 让用户选"导入到当前编辑器 / 导入到文档库"
           // 文档库是马克档的核心,默认推荐"导入到文档库"
-          showImportTargetPicker(close);
+          showImportTargetPicker(() => this.close());
         });
 
         $('act-sample').addEventListener('click', () => {
           if ($('editor').value.trim() && $('editor').value !== SAMPLE_DOC) {
-            if (!confirm('当前内容将被示例文档覆盖，确定吗？')) { close(); return; }
+            if (!confirm('当前内容将被示例文档覆盖，确定吗？')) { this.close(); return; }
           }
           ContentManager.loadSample();
           showToast('已加载示例文档 ✓');
-          close();
+          this.close();
         });
 
         $('act-clear').addEventListener('click', () => {
-          if (!confirm('确定清空所有内容吗？此操作不可恢复。')) { close(); return; }
+          if (!confirm('确定清空所有内容吗？此操作不可恢复。')) { this.close(); return; }
           ContentManager.clear();
           showToast('已清空');
-          close();
+          this.close();
         });
 
         $('act-sync').addEventListener('click', () => {
-          close();
+          this.close();
           if (typeof showSyncMenu === 'function') showSyncMenu();
-        });
-
-        $('act-ai').addEventListener('click', () => {
-          close();
-          if (typeof AIAssistant !== 'undefined') AIAssistant.open();
         });
 
         // 文件导入(统一入口:文档库 / 抽屉 / 拖拽 / Native 都触发此 input)
@@ -7293,7 +6372,7 @@ MIT
             } else {
               showToast('当前浏览器不支持 PWA 安装，请用 Chrome / Edge / Safari');
             }
-            close();
+            this.close();
           });
 
           // 监听可安装事件，显示入口
@@ -7386,7 +6465,6 @@ MIT
         safe('视图模式', () => ViewManager.init());
         safe('抽屉菜单', () => Drawer.init());
         safe('云同步', () => { if (window.SyncManager) SyncManager.init(); });
-        safe('AI 助手', () => { if (window.AIAssistant) AIAssistant.init(); });
         safe('拖拽文件', () => { if (typeof DragDrop !== 'undefined') DragDrop.init(); });
         safe('文档大纲', () => { if (typeof Outline !== 'undefined') Outline.init(); });
         safe('查找替换', () => { if (typeof FindReplace !== 'undefined') FindReplace.init(); });
@@ -7665,9 +6743,8 @@ MIT
       if (origDownloadBtn) {
         origDownloadBtn.onclick = function() {
           nativeDownload('markdoc-' + new Date().toISOString().slice(0, 10), document.getElementById('editor').value);
-          // 关闭抽屉
-          document.getElementById('drawer').classList.remove('show');
-          document.getElementById('drawer-mask').classList.remove('show');
+          // 关闭抽屉 (走 Drawer.close() 同步状态)
+          if (window.Drawer) Drawer.close();
         };
       }
 
@@ -7710,8 +6787,8 @@ MIT
           actShare.onclick = function() {
             const text = document.getElementById('editor').value;
             window.Android.shareText(text, '分享 Markdown');
-            document.getElementById('drawer').classList.remove('show');
-            document.getElementById('drawer-mask').classList.remove('show');
+            // 关闭抽屉
+            if (window.Drawer) Drawer.close();
           };
         }
       }
@@ -7727,8 +6804,8 @@ MIT
           const ok = await copyToClipboard(html);
           window.Android.showToast(ok ? '已复制 HTML ✓' : '复制失败');
           window.Android.haptic(15);
-          document.getElementById('drawer').classList.remove('show');
-          document.getElementById('drawer-mask').classList.remove('show');
+          // 关闭抽屉
+          if (window.Drawer) Drawer.close();
         };
       }
       if (origCopyMd) {
@@ -7736,8 +6813,8 @@ MIT
           const ok = await copyToClipboard(document.getElementById('editor').value);
           window.Android.showToast(ok ? '已复制 Markdown ✓' : '复制失败');
           window.Android.haptic(15);
-          document.getElementById('drawer').classList.remove('show');
-          document.getElementById('drawer-mask').classList.remove('show');
+          // 关闭抽屉
+          if (window.Drawer) Drawer.close();
         };
       }
 

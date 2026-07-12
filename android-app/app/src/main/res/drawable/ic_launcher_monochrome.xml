@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 应用启动图标 - monochrome 主题图标层 v1.0.11
+     Android 13+ 主题图标(Themed Icon)专用。
+     系统会取本图层的 alpha 通道作为 mask,忽略颜色,用系统主题色重新填充。
+     重要: monochrome 下只画"主体形状" + 镂空 —— 不要画多色叠加,
+           否则主题色会把所有 alpha>0 区域填成同色,看不出任何形状。
+     设计: 文档卡片(实心主题色),M 字母挖空(透明)——
+           主题图标下显示成一个"主题色文档,中间镂空 M"。
+     形状全部在 66dp 安全区(半径 330,中心 512)内。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <!-- 文档卡片(实心,主题色填充的块面) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M284,369 L586,369 L680,463 L680,736 Q680,786 630,786 L334,786 Q284,786 284,736 Z" />
+
+    <!-- 折角(同主题色,半透明 → alpha 通道 0.7,看起来"柔和"一些) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.7"
+        android:pathData="M586,369 L680,463 L586,463 Z" />
+
+    <!-- M 字母(镂空:用 evenodd fillType 制造"洞")
+         monochrome 下颜色被忽略,只关心 alpha:
+         - 文档卡片 alpha=1 → 主题色
+         - M 字母通过 evenodd "挖洞" → 镂空主题色背景
+         在主题图标下显示: 一个主题色文档,中间一个 M 形状的"洞" -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M284,369 L586,369 L680,463 L680,736 Q680,786 630,786 L334,786 Q284,786 284,736 Z M356,696 L356,512 L410,512 L482,597 L554,512 L608,512 L608,696 L566,696 L566,575 L500,649 L464,649 L398,575 L398,696 Z" />
+
+</vector>

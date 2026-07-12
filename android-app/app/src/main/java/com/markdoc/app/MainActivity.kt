@@ -205,7 +205,7 @@ class MainActivity : AppCompatActivity() {
             try { allowUniversalAccessFromFileURLs = true } catch (_: Throwable) {}
             textZoom = 100
             mediaPlaybackRequiresUserGesture = false
-            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             try { saveFormData = false } catch (_: Throwable) {}
             try { setGeolocationEnabled(false) } catch (_: Throwable) {}
             userAgentString = "$userAgentString MakemdownApp/${BuildConfig.VERSION_NAME} ${DeviceUtils.getMiuiVersion()}"
@@ -314,21 +314,38 @@ class MainActivity : AppCompatActivity() {
         try {
             val backupContent = DataBackup.load(this) ?: return
             if (backupContent.isEmpty()) return
-            val js = """
-                (function() {
-                    try {
-                        var content = localStorage.getItem('markdoc.content.v1');
-                        if (!content || content.length < 10) {
-                            if (window.importMarkdown) {
-                                window.importMarkdown(${jsString(backupContent)});
-                                return 'restored';
-                            }
+
+            // 修复 B11: onPageFinished 第一次触发时,JS 端 importMarkdown 还没注册。
+            // 用轮询: 如果函数不存在,过 200ms 重试,最多 3 次。
+            val attempts = intArrayOf(0)
+            val maxAttempts = 3
+            val payload = jsString(backupContent)
+            val tryRestore = object : Runnable {
+                override fun run() {
+                    if (!webViewReady) return
+                    attempts[0] += 1
+                    val js = """
+                        (function() {
+                            try {
+                                var content = localStorage.getItem('markdoc.content.v1');
+                                if (content && content.length >= 10) return 'has-content';
+                                if (window.importMarkdown) {
+                                    window.importMarkdown($payload);
+                                    return 'restored';
+                                }
+                                return 'not-ready';
+                            } catch(e) { return 'error:' + e.message; }
+                        })();
+                    """.trimIndent()
+                    webView.evaluateJavascript(js) { value ->
+                        Log.i(TAG, "备份恢复 #$attempts[0]: $value")
+                        if (value == "\"not-ready\"" && attempts[0] < maxAttempts) {
+                            webView.postDelayed(this, 200)
                         }
-                        return 'has-content';
-                    } catch(e) { return 'error:' + e.message; }
-                })();
-            """.trimIndent()
-            webView.evaluateJavascript(js) { value -> Log.i(TAG, "备份恢复: $value") }
+                    }
+                }
+            }
+            webView.postDelayed(tryRestore, 100)
         } catch (e: Throwable) {
             Log.w(TAG, "checkAndRestoreBackup", e)
         }

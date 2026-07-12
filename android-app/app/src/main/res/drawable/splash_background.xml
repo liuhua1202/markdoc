@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 启动页背景：纯色 + 居中 Logo -->
-<!-- 简化版本：不使用 <bitmap> 包装，避免与 adaptive icon 冲突 -->
+<!-- 启动页背景：纯色 + 居中 Logo
+     修复 B34 续: 之前用 <bitmap android:src="@mipmap/ic_launcher"/>,
+     但 @mipmap/ic_launcher 在 Android 8+ 解析为 adaptive-icon XML,
+     <bitmap> 只接受位图(PNG/JPG/WebP),拒绝 vector/adaptive-icon,
+     inflate 直接抛异常 → 启动闪退。
+     改为直接引用 @drawable/ic_launcher_foreground (vector drawable),
+     layer-list item 的 android:width/height (API 23+) 限制大小。-->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- 背景色（随主题切换） -->
+    <!-- 背景色 -->
     <item android:drawable="@color/splash_bg_light" />
+    <!-- 居中 Logo: 用 vector drawable,避免 <bitmap> 拒绝 adaptive-icon 的坑 -->
+    <item
+        android:width="180dp"
+        android:height="180dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_launcher_foreground" />
 </layer-list>

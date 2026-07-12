@@ -219,18 +219,26 @@ class WebAppInterface(
     /**
      * 把当前编辑器内容备份到本地文件
      * 解决 MIUI/HyperOS 杀进程导致 localStorage 数据丢失
+     *
+     * 修复 B3: @JavascriptInterface 默认在 WebView 线程调用,IO 操作必须切到
+     *         后台线程,否则会阻塞所有 JS 执行和 WebView 渲染
      */
     @JavascriptInterface
     fun dataBackup(content: String) {
-        DataBackup.save(context, content)
+        Thread {
+            DataBackup.save(context.applicationContext, content)
+        }.start()
     }
 
     /**
      * 清除本地备份（清空编辑器时调用）
+     * 修复 B3: 同上,IO 切到后台线程
      */
     @JavascriptInterface
     fun dataBackupClear() {
-        DataBackup.clear(context)
+        Thread {
+            DataBackup.clear(context.applicationContext)
+        }.start()
     }
 
     /**

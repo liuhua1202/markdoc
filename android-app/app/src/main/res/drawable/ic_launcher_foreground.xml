@@ -1,48 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 应用启动图标前景层 - 自适应图标 (Android 8.0+) -->
+<!-- 应用启动图标前景层 v1.0.12
+     简化: 去掉放大镜(小尺寸下糊掉 + monochrome 看不见 + 视觉拥挤)
+     现在只有 文档 + 折角 + M —— 简洁清晰,任何尺寸/启动器都识别度高
+     全部内容控制在 66dp 安全区(半径 330,中心 512)内
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024">
 
-    <!-- 内层适配：1024 viewport 与原 SVG 一致，缩放通过 width/height 控制 -->
-
-    <!-- 白色文档卡片 -->
+    <!-- 文档卡片 (实心白) -->
     <path
-        android:fillColor="#FDFCF7"
-        android:fillAlpha="0.96"
-        android:pathData="M212,262 H760 A48,48 0 0 1 808,310 V714 A48,48 0 0 1 760,762 H212 A48,48 0 0 1 164,714 V310 A48,48 0 0 1 212,262 Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M284,369 L586,369 L680,463 L680,736 Q680,786 630,786 L334,786 Q284,786 284,736 Z" />
 
-    <!-- 折页阴影 -->
+    <!-- 折角三角 -->
     <path
-        android:fillColor="#F0EEF5"
-        android:fillAlpha="0.5"
-        android:pathData="M712,262 L812,362 L812,762 L212,762 L212,262 Z" />
+        android:fillColor="#D8D8D8"
+        android:pathData="M586,369 L680,463 L586,463 Z" />
 
-    <!-- 折页三角 -->
+    <!-- 黑色 M 字母 (粗体,在文档内居中) -->
     <path
-        android:fillColor="#E2DEDE"
-        android:pathData="M712,262 L712,362 L812,362 Z" />
-
-    <!-- 红色 M 字母（圆角粗体） -->
-    <path
-        android:strokeColor="#FF5A5F"
-        android:strokeWidth="64"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M330,620 L410,410 L512,510 L614,410 L694,620" />
-
-    <!-- 左下角两个 # 装饰 -->
-    <group>
-        <path
-            android:fillColor="#D0CDD6"
-            android:fillAlpha="0.6"
-            android:pathData="M268,668 L268,684 L256,684 L256,696 L268,696 L268,712 L280,712 L280,696 L292,696 L292,712 L304,712 L304,696 L316,696 L316,684 L304,684 L304,668 L292,668 L292,684 L280,684 L280,668 Z" />
-        <path
-            android:fillColor="#D0CDD6"
-            android:fillAlpha="0.6"
-            android:pathData="M328,668 L328,684 L316,684 L316,696 L328,696 L328,712 L340,712 L340,696 L352,696 L352,712 L364,712 L364,696 L376,696 L376,684 L364,684 L364,668 L352,668 L352,684 L340,684 L340,668 Z" />
-    </group>
+        android:fillColor="#000000"
+        android:pathData="M356,696 L356,512 L410,512 L482,597 L554,512 L608,512 L608,696 L566,696 L566,575 L500,649 L464,649 L398,575 L398,696 Z" />
 
 </vector>
