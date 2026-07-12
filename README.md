@@ -104,6 +104,12 @@ open MarkdownPad.xcworkspace
 
 ### 📋 更新日志
 
+#### v1.0.14 (2026-07-13)
+- 🐛 **大纲点击跳转** — 之前阅读模式下点大纲项不动(滚到被覆盖的 edit 预览);现在按当前模式选真正的滚动容器(edit → `.preview` / reader → `#reader`),`scrollTo` 替代 `scrollIntoView` 更准
+- 🐛 **阅读模式横向溢出** — 长文件名/URL 撑爆 `#reader` 导致整页可横移;容器加 `overflow-x: hidden`,标题/正文加 `overflow-wrap: anywhere`
+- 🎨 **图标文档元素居中** — 之前文档卡片偏左下(中心 462,580),现在所有 variant(logo.svg / Android 前景/单色 / PWA / Windows ICO)卡片 + M 一起对齐到 viewport 中心 512,512
+- 🛠 **新工具** — `tools/regen-logo-ico.py` 从 logo.svg 一键生成 ICO / 多尺寸 PNG,无外部依赖
+
 #### v1.0.13 (2026-07-12)
 - 🐛 **修复 WebDAV 备份恢复轮询** — 三次重试 + 状态轮询,导出/恢复不再卡死
 - 🐛 **修复 DataBackup IO 阻塞** — 切到后台线程,UI 不再卡顿
